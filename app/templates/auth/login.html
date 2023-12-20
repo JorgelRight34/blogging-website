@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Log In{% endblock title %}
+
+{% block content %}
+    <div class="container border rounded shadow-sm p-4 bg-white" style="max-width: 50%;">
+        <div class="mb-4">
+            <h3>Log In</h3>
+        </div>
+        <form method="post">
+            <div class="mb-3">
+                <label for="email" class="form-label">Email address</label>
+                <input type="email" class="form-control" id="email" name="email" aria-describedby="email">
+                <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password">
+            </div>
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="remember_me" name="remember_me">
+                <label class="form-check-label" for="remember_me">Check me out</label>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+{% endblock content %}
