@@ -8,14 +8,18 @@
     <div class="card">
         <div class="card-header">
             <span class="font-weight-bold">{{ post.title }}</span> &middot;
-            <span class="text-muted">by {{ post.author }} |
-            </span>
+            <span class="text-muted">by <a href="{{ url_for('auth.profile', username=post.get_author.username )}}">{{ post.get_author.username }}</a> |
+            {{ post.date }}</span>
         </div>
         <div class="card-body">
             {{ post.body }}
         </div>
         <div class="card-footer text-center text-muted">
-            <a href="#">Edit</a> | <a href="{{ url_for('blogs.delete_post', post=post.id) }}">Delete</a>
+            <a href="{{ url_for('blogs.comment', post_id=post.id) }}">Comment </a>
+            <a href="{{ url_for('blogs.post', post_id=post.id) }}">See comments</a>
+            {% if current_user.id == post.author %} 
+            | <a href="{{ url_for('blogs.delete_post', post_id=post.id) }}">Delete</a>
+            {% endif %}
         </div>
     </div>
     <br />

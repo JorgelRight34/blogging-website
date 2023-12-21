@@ -38,7 +38,7 @@ def login():
                     # Redirect to main page
                     return redirect(url_for('main.index'))
         else:
-            flash('Invalid username')
+            flash('Invalid credentials')
         
     # If accesed view via GET method
     return render_template('auth/login.html')
@@ -49,7 +49,7 @@ def logout():
     # Log current user out with flask_login method logout_user()
     logout_user()
     flash("You have logged out!")
-    return redirect(url_for('main.index'))
+    return redirect(request.referrer or url_for('main.index'))
 
 
 @auth.route('/register', methods=['GET', 'POST'])
@@ -64,12 +64,23 @@ def register():
         # Avoid empty inputs
         if not email:
             flash("Must enter an email")
+            return render_template('auth/register.html')
+        if User.query.filter_by(email=email).first():
+            flash("There's already an user with this email")
+            return render_template('auth/register.html')
         if not username:
             flash("Must enter a username")
+            return render_template('auth/register.html')
+        if User.get_user(username):
+            flash("There's  already an account with this username")
+            return render_template('auth/register.html')
         if not password:
             flash("Must enter a password")
+            return render_template('auth/register.html')
         if not confirmation_password:
             flash("Must enter confirmation password")
+            return render_template('auth/register.html')
+        
 
         if password == confirmation_password:
             # Create instance of User
@@ -98,7 +109,26 @@ def profile(username):
     posts = Blog.query.filter_by(author=user.id).all()
 
     # Render template
-    return render_template('auth/user.html', posts=posts)
+    return render_template('auth/user.html', user=user, posts=posts)
+
+
+@login_required
+@auth.route("/follow/<username>")
+def follow(username):
+    # Don't allow to follow oneself
+    if current_user.username == username:
+        flash("Cannot follow yourself")
+        return redirect(request.referrer or url_for('main.index'))
+    
+    # Follow user if not following
+    try:
+        current_user.follow(username)
+    except:
+        flash("Already following")
+
+    # Redirect user
+    return redirect(request.referrer or url_for('main.index'))
+    
 
 
 

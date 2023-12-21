@@ -12,7 +12,8 @@
             </div>
             <div class="col">
                 <div class="row">
-                    <h3>{{ current_user.username }}</h3>
+                    <h3>{{ user.username }} Followers = {{ user.followers() }}</h3>
+                    <a class="btn btn-primary" href="{{ url_for('auth.follow', username=user.username) }}">Follow</a>
                 </div>
             </div>
         </div>
@@ -26,14 +27,14 @@
                 <div class="card">
                     <div class="card-header">
                     <span class="font-weight-bold">{{ post.title }}</span> &middot;
-                    <span class="text-muted">by {{ post.author.username }} |
+                    <span class="text-muted">by {{ post.get_author.username }} |
                     {{ post.date }}</span>
                     </div>
                     <div class="card-body">
                         {{ post.body }}
                     </div>
                     <div class="card-footer text-center text-muted">
-                        <a href="#">Delete</a>
+                        <a href="">Delete</a>
                     </div>
                 </div>
                 <br />

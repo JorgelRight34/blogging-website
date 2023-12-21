@@ -1,8 +1,53 @@
 from flask import abort, render_template, request, redirect, url_for, flash
 from flask_login import current_user, login_required
 from . import blogs
-from ..models import Blog
+from ..models import Blog, Comment
 from .. import db
+
+
+@login_required
+@blogs.route('/comment/<int:post_id>', methods=['GET', 'POST'])
+def comment(post_id):
+    if request.method == "POST":
+        # Get body
+        body = request.form.get("body")
+
+        # Comment
+        current_user.comment(post_id, body)
+
+        # Redirect
+        return redirect(url_for('main.index'))
+    
+    # If accesed view by GET method
+    return render_template('blogs/comment.html')
+
+
+@login_required
+@blogs.route('/delete_comment/<int:comment_id>')
+def delete_comment(comment_id):
+    # Get comment
+    comment = Comment.query.filter_by(id=comment_id)
+    # Verify if user is the owner of the comment
+    if not current_user.id == comment.id:
+        flash("You are not the owner of the comment")
+        return redirect(request.referrer or url_for('main.index'))
+
+
+@login_required
+@blogs.route('/delete_post/<int:post_id>')
+def delete_post(post_id):
+    # Get post
+    post = Blog.query.filter_by(id=int(post_id)).first()
+
+    # Delete post if possible
+    post.delete_post()
+    try:
+        post.delete_post()
+        flash("Post deleted")
+        return redirect(request.referrer or url_for('main.index'))
+    except:
+        return redirect(request.referrer or url_for('main.index'))
+
 
 @login_required
 @blogs.route('/new_post', methods=['GET', 'POST'])
@@ -31,24 +76,17 @@ def new_post():
         print("Post saved")
         return redirect(url_for('main.index'))
 
-    # If accesed view by GET method
+    # If accesed view via GET method
     return render_template('blogs/new_post.html')
 
-@login_required
-@blogs.route('/delete/<int:post>')
-def delete_post(post):
-    # Get post
-    post = Blog.query.filter_by(id=int(post)).first()
 
-    if current_user.id == post.author:
-        # Delete from the session
-        db.session.delete(post)
-        
-        # Commit changes
-        db.session.commit()
-        return redirect(url_for('main.index'))
-    else:
-        flash("Cannot delete a post that is not yours")
-        return redirect(url_for('main.index'))
-    
+@blogs.route('/post/<int:post_id>')
+def post(post_id):
+    # Get post
+    post = Blog.query.filter_by(id=post_id).first()
+
+    # Render template
+    return render_template("blogs/post.html", post=post)
+
+
 
