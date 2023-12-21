@@ -4,6 +4,7 @@ from itsdangerous import TimedSerializer as Serializer
 from flask import current_app
 from flask_login import UserMixin
 from . import db, login_manager
+from datetime import datetime
 
 
 class Blog(db.Model):
@@ -12,6 +13,10 @@ class Blog(db.Model):
     title = db.Column(db.String(64), nullable=False)
     body = db.Column(db.Text, nullable=False)
     author = db.Column(db.Integer, db.ForeignKey('users.id'))
+    date = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+
+    def __repr__(self):
+        return self.title
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
