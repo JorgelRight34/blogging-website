@@ -3,7 +3,27 @@
 {% block title %}Blog App{% endblock %}
 
 {% block content %}
-
-<h1>Hello World!</h1>
+<div class="container bg-white w-75 p-4" >
+    {% for post in posts %}
+        <div class="card">
+            <div class="card-header">
+            <span class="font-weight-bold">{{ post.title }}</span> &middot;
+            <span class="text-muted">by <a href="{{ url_for('auth.profile', username='post.author.username') }}" >{{ post.author.username }}</a>|
+            {{ post.date }}</span>
+            </div>
+            <div class="card-body">
+                {{ post.body }}
+            </div>
+            <div class="card-footer text-center text-muted">
+                {% if current_user.id == post.author.id %}
+                    <a href="{{ url_for('blogs.delete_post', post=post.id) }}">Delete</a>
+                {% else %}
+                    <a href="#">Follow</a>
+                {% endif %}
+            </div>
+        </div>
+        <br />
+    {% endfor %}
+</div> 
 
 {% endblock content %}

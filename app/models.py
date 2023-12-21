@@ -1,9 +1,9 @@
 from werkzeug.security import generate_password_hash, check_password_hash
-from . import db
 from itsdangerous import TimedSerializer as Serializer
 from flask import current_app
-from flask_login import UserMixin
+from flask_login import UserMixin, current_user
 from . import db, login_manager
+from datetime import datetime
 
 
 class Blog(db.Model):
@@ -12,6 +12,17 @@ class Blog(db.Model):
     title = db.Column(db.String(64), nullable=False)
     body = db.Column(db.Text, nullable=False)
     author = db.Column(db.Integer, db.ForeignKey('users.id'))
+    date = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+
+    @property
+    def author(self):
+        from .models import User
+        user = User.query.filter_by(id=self.author).first()
+        return user
+
+    def __repr__(self):
+        return self.title
+    
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -19,7 +30,8 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(64), unique=True, index=True)
     username = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
-    blogs = db.relationship('Blog', backref='user')
+    blogs = db.relationship('Blog', backref='user', lazy='dynamic')
+    followers = db.relationship('Follower', backref='followee')
 
     confirmed = db.Column(db.Boolean, default=False)
     
@@ -41,7 +53,20 @@ class User(UserMixin, db.Model):
         db.session.add(self)
         return True
 
-    
+    def follow(self, username):
+        # Get username from the database
+        user = User.query.filter_by(username=username).first()
+
+        # Follow
+        follower = Follow(follower=current_user.id, followee=user.id)
+
+        # Add follower to the session
+        db.session.add(follower)
+
+        # Commit changes
+        db.session.commit()
+        return
+
     @property
     def password(self):
         raise AttributeError('password is not readable')
@@ -56,7 +81,14 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return '<User %r>' % self.username
+
     
+class Follow(db.Model):
+    __tablename__ = 'follows'
+    follower_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True, name='follower_id')
+    followed_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True, name='followee_id')
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 @login_manager.user_loader
 def load_user(user_id):
