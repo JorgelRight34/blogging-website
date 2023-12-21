@@ -3,20 +3,26 @@
 {% block title %}New post{% endblock title %}
 
 {% block content %}
-<div class="container border rounded shadow-sm p-4 bg-white" style="max-width: 50%;">
-    <div class="mb-4">
-        <h3>New Post</h3>
+<div class="p-4">
+    <div class="container border rounded shadow-sm p-4 bg-white" style="max-width: 50%;">
+        <div class="mb-4">
+            <h3>New Post</h3>
+        </div>
+        <form method="post">
+            <div class="mb-3">
+                <label for="title" class="form-label">Title</label>
+                <input class="form-control" id="title" name="title" aria-describedby="title" required>
+            </div>
+            <div class="mb-3">
+                <label for="body" class="form-label">Body</label>
+                <textarea class="form-control" id="body" name="body" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="files class="form-label">Photos/Videos</label>
+                <input class="form-control" type="file" id="files" name="files" multiple>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
     </div>
-    <form method="post">
-        <div class="mb-3">
-            <label for="title" class="form-label">Title</label>
-            <input class="form-control" id="title" name="title" aria-describedby="title" required>
-        </div>
-        <div class="mb-3">
-            <label for="body" class="form-label">Body</label>
-            <textarea class="form-control" id="body" name="body" required></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
 </div>
 {% endblock %}

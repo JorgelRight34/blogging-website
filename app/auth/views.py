@@ -1,8 +1,8 @@
 from flask import render_template, redirect, request, url_for, flash
-from flask_login import login_user, logout_user, login_required
+from flask_login import login_user, logout_user, login_required, current_user
 from . import auth
 from .. import db
-from ..models import User
+from ..models import User, Blog
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
@@ -40,7 +40,7 @@ def login():
         else:
             flash('Invalid username')
         
-    # If accesed view by GET method
+    # If accesed view via GET method
     return render_template('auth/login.html')
 
 @auth.route('/logout')
@@ -85,8 +85,21 @@ def register():
             flash('You can now <a href="{{ url_for("auth.login") }}>log in!</a>')
             return redirect(url_for('main.index'))
 
-    # If accesed view by GET method
+    # If accesed view via GET method
     return render_template('auth/register.html')
+
+@login_required
+@auth.route("/<username>")
+def profile(username):
+    # Get username from the database
+    user = User.query.filter_by(username=username).first()
+
+    # Get user's posts
+    posts = Blog.query.filter_by(author=user.id).all()
+
+    # Render template
+    return render_template('auth/user.html', posts=posts)
+
 
 
 

@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ current_user.username }}{% endblock title %}
+
+{% block content %}
+<div class="container">
+    <!-- User information-->
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <img src="" alt="User profile photo">
+            </div>
+            <div class="col">
+                <div class="row">
+                    <h3>{{ current_user.username }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User activities -->
+    <div class="container">
+        <div class="row">
+            <h3>My Posts</h3>
+            {% for post in posts %}
+                <div class="card">
+                    <div class="card-header">
+                    <span class="font-weight-bold">{{ post.title }}</span> &middot;
+                    <span class="text-muted">by {{ post.author.username }} |
+                    {{ post.date }}</span>
+                    </div>
+                    <div class="card-body">
+                        {{ post.body }}
+                    </div>
+                    <div class="card-footer text-center text-muted">
+                        <a href="#">Delete</a>
+                    </div>
+                </div>
+                <br />
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock content %}

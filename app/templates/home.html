@@ -3,7 +3,24 @@
 {% block title %}Blog App{% endblock %}
 
 {% block content %}
-
-<h1>Hello World!</h1>
+<div class="container bg-white w-75 p-4" >
+    {% for post in posts %}
+    <div class="card">
+        <div class="card-header">
+            <span class="font-weight-bold">{{ post.title }}</span> &middot;
+            <span class="text-muted">by {{ post.author }} |
+            </span>
+        </div>
+        <div class="card-body">
+            {{ post.body }}
+        </div>
+        <div class="card-footer text-center text-muted">
+            <a href="#">Edit</a> | <a href="{{ url_for('blogs.delete_post', post=post.id) }}">Delete</a>
+        </div>
+    </div>
+    <br />
+            
+    {% endfor %}
+</div> 
 
 {% endblock content %}
