@@ -2,7 +2,7 @@ from flask import render_template, redirect, request, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from . import auth
 from .. import db
-from ..models import User, Blog, Follow
+from ..models import User, Blog
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
@@ -99,16 +99,6 @@ def profile(username):
 
     # Render template
     return render_template('auth/user.html', posts=posts)
-
-
-@login_required
-@auth.route("/follow/<username>")
-def follow(username):
-    # Follow user with username as 'username'
-    current_user.follow(username)
-
-    # Render main page
-    return render_template('main.index')
 
 
 
