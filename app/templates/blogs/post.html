@@ -10,16 +10,22 @@
         </div>
         <div>
             <div class="mb-3">
-                <p for="title" class="form-label">By {{ post.get_author.username }}</p>
+                <p for="title" class="form-label">Posted by <a href="{{ url_for('auth.profile', username=post.get_author.username )}}">{{ post.get_author().username }}</a></p>
             </div>
             <div class="mb-3">
                 <p>{{ post.body }}</p>
             </div>
         </div>
         <div>
+            <a href="{{ url_for('blogs.comment', post_id=post.id) }}">Comment </a>
             {% for comment in post.comments %}
             <div class="mb-3">
-                <p for="title" class="form-label">By {{ comment.get_author.username }}</p>
+                <p for="title" class="form-label">By 
+                    <a href="{{ url_for('auth.profile', username=post.get_author.username )}}">
+                        {{ comment.get_author().username }}
+                    </a>
+                     at {{ comment.date }}
+                </p>
                 <p>{{ comment.body }}</p>
                 {% if current_user.id == comment.user_id %}
                 <a href="{{ url_for('blogs.delete_comment', comment_id=comment.id) }}">Delete</a>

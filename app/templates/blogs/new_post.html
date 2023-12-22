@@ -8,7 +8,7 @@
         <div class="mb-4">
             <h3>New Post</h3>
         </div>
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
             <div class="mb-3">
                 <label for="title" class="form-label">Title</label>
                 <input class="form-control" id="title" name="title" aria-describedby="title" required>
@@ -18,7 +18,7 @@
                 <textarea class="form-control" id="body" name="body" required></textarea>
             </div>
             <div class="mb-3">
-                <label for="files class="form-label">Photos/Videos</label>
+                <label for="files" class="form-label">Photos/Videos</label>
                 <input class="form-control" type="file" id="files" name="files" multiple>
             </div>
             <button type="submit" class="btn btn-primary">Submit</button>

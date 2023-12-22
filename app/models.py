@@ -15,6 +15,13 @@ class Blog(db.Model):
     author = db.Column(db.Integer, db.ForeignKey('users.id'))
     date = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     comments = db.relationship('Comment', backref='blog', cascade='all, delete-orphan')
+    files = db.relationship('File', backref='blog', cascade='all, delete-orphan')
+
+    def get_files(self):
+        # Get post's files
+        files = File.query.filter_by(blog_id=self.id).all()
+        print(files)
+        return files
 
     def get_author(self):
         # Get author's user
@@ -33,6 +40,25 @@ class Blog(db.Model):
         
     def __repr__(self):
         return self.title
+
+
+class Comment(db.Model):
+    __tablename__ = 'comments'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    blog_id = db.Column(db.Integer, db.ForeignKey('blogs.id'), nullable=False)
+    body = db.Column(db.Text, nullable=False)
+    date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    def get_author(self):
+        # Get author's user
+        user = User.query.filter_by(id=self.user_id).first()
+        return user
+    
+    def delete_comment(self):
+        # Delete comment from the database
+        db.session.delete(self)
+        db.session.commit()
 
 
 class User(UserMixin, db.Model):
@@ -177,26 +203,12 @@ class Follow(db.Model):
     follower_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     followed_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    
 
-class Comment(db.Model):
-    __tablename__ = 'comments'
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-    blog_id = db.Column(db.Integer, db.ForeignKey('blogs.id'), primary_key=True)
-    body = db.Column(db.Text, nullable=False)
-    date = db.Column(db.DateTime, default=datetime.utcnow)
 
-    def get_author(self):
-        # Get author's user
-        user = User.query.filter_by(id=self.user_id).first()
-        return user
-    
-    def delete_comment(self):
-        # Delete comment from the database
-        db.session.delete(self)
-        db.session.commit()
-
-    
+class File(db.Model):
+    __tablename__ = 'files'
+    path = db.Column(db.String, primary_key=True)
+    blog_id = db.Column(db.Integer, db.ForeignKey('blogs.id'))
 
 
 @login_manager.user_loader

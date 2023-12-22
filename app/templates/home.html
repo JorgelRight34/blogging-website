@@ -3,22 +3,31 @@
 {% block title %}Blog App{% endblock %}
 
 {% block content %}
-<div class="container bg-white w-75 p-4" >
+<div class="container bg-white w-50 p-4" >
     {% for post in posts %}
     <div class="card">
         <div class="card-header">
-            <span class="font-weight-bold">{{ post.title }}</span> &middot;
-            <span class="text-muted">by <a href="{{ url_for('auth.profile', username=post.get_author.username )}}">{{ post.get_author.username }}</a> |
-            {{ post.date }}</span>
+            <span class="text-muted">Posted by <a href="{{ url_for('auth.profile', username=post.get_author.username )}}">{{ post.get_author().username }}</a> |
+            {{ post.date.strftime('%Y-%m-%d %H:%M:%S') }}</span>
         </div>
         <div class="card-body">
-            {{ post.body }}
+                <div class="row">
+                    <h5 class="card-title">{{ post.title }}</h5>
+                </div>
+                <div class="row">
+                    <p class="card-body-text">{{ post.body }}</p>
+                </div>
+                <div class="row">
+                    {% for file in post.get_files() %}
+                        <img src="{{ file.path }}"></img>
+                    {% endfor %}
+                </div>
         </div>
-        <div class="card-footer text-center text-muted">
-            <a href="{{ url_for('blogs.comment', post_id=post.id) }}">Comment </a>
-            <a href="{{ url_for('blogs.post', post_id=post.id) }}">See comments</a>
+        <div class="card-footer text-muted">
+            <a class="text-decoration-none" style="color: black;" href="{{ url_for('blogs.comment', post_id=post.id) }}"><i class="fa-regular fa-comment"></i> Comment </a>
+            <a class="text-decoration-none mx-4" style="color: black;" href="{{ url_for('blogs.post', post_id=post.id) }}"><i class="fa-regular fa-comments"></i> See comments  </a>
             {% if current_user.id == post.author %} 
-            | <a href="{{ url_for('blogs.delete_post', post_id=post.id) }}">Delete</a>
+                <a class="text-decoration-none" style="color: black;" href="{{ url_for('blogs.delete_post', post_id=post.id) }}"><i class="fa-regular fa-trash-can"></i> Delete  </a>
             {% endif %}
         </div>
     </div>

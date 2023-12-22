@@ -1,8 +1,11 @@
 from flask import abort, render_template, request, redirect, url_for, flash
 from flask_login import current_user, login_required
 from . import blogs
-from ..models import Blog, Comment
+from ..models import Blog, Comment, File
 from .. import db
+import os
+from uuid import uuid1
+from werkzeug.utils import secure_filename
 
 
 @login_required
@@ -26,11 +29,19 @@ def comment(post_id):
 @blogs.route('/delete_comment/<int:comment_id>')
 def delete_comment(comment_id):
     # Get comment
-    comment = Comment.query.filter_by(id=comment_id)
+    comment = Comment.query.filter_by(id=comment_id).first()
+
     # Verify if user is the owner of the comment
     if not current_user.id == comment.id:
         flash("You are not the owner of the comment")
         return redirect(request.referrer or url_for('main.index'))
+    
+    # Delete comment
+    comment.delete_comment()
+
+    # Redirect
+    flash("Comment deleted!")
+    return redirect(request.referrer or url_for('main.index'))
 
 
 @login_required
@@ -56,6 +67,7 @@ def new_post():
         # Initialize input variables
         title = request.form.get("title")
         body = request.form.get("body")
+        files = request.files.getlist("files")
 
         # Check they are not null
         if not title:
@@ -68,12 +80,33 @@ def new_post():
         # Initialize Blog object
         blog = Blog(title=title, body=body, author=current_user.id)
 
-        # Add blog to the session
+        # Add blog to the database
         db.session.add(blog)
-
-        # Commit
         db.session.commit()
-        print("Post saved")
+
+        # Get blog object
+        # Save files
+        if files:
+            for file in files:
+                # Embbed filename with uuid and make sure the filename
+                # is safe with secure_filename
+                filename = f'{uuid1()} {secure_filename(file.filename)}'
+                
+                # Get filename
+                filename = os.path.join("app\\static\\images\\post files", filename)
+
+                # Save file
+                file.save(filename)
+
+                # Create file object, and add it to the session 
+                file = File(path=filename, blog_id=blog.id)
+                db.session.add(file)
+
+        # Commit after adding each file
+        db.session.commit()
+
+        # Redirect
+        flash("Post created!")
         return redirect(url_for('main.index'))
 
     # If accesed view via GET method
