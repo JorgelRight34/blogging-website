@@ -93,13 +93,14 @@ def new_post():
                 filename = f'{uuid1()} {secure_filename(file.filename)}'
                 
                 # Get filename
+                static_path = f"static\\images\\post files\\{filename}"
                 filename = os.path.join("app\\static\\images\\post files", filename)
 
                 # Save file
                 file.save(filename)
 
                 # Create file object, and add it to the session 
-                file = File(path=filename, blog_id=blog.id)
+                file = File(path=static_path, blog_id=blog.id)
                 db.session.add(file)
 
         # Commit after adding each file

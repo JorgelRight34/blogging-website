@@ -19,7 +19,7 @@
                 </div>
                 <div class="row">
                     {% for file in post.get_files() %}
-                        <img src="{{ file.path }}"></img>
+                        <img class="img-fluid" src="{{ file.path }}">
                     {% endfor %}
                 </div>
         </div>
