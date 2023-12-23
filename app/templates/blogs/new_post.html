@@ -17,12 +17,31 @@
                 <label for="body" class="form-label">Body</label>
                 <textarea class="form-control" id="body" name="body" required></textarea>
             </div>
-            <div class="mb-3">
+            <div class="mb-3" id="filesContainer">
                 <label for="files" class="form-label">Photos/Videos</label>
-                <input class="form-control" type="file" id="files" name="files" multiple>
+                <input class="form-control" type="file" id="files" name="files" onchange="addFileInput(this)">
             </div>
             <button type="submit" class="btn btn-primary">Submit</button>
         </form>
     </div>
 </div>
 {% endblock %}
+
+{% block script %}
+<script>
+    function addFileInput(input) {
+        // Verify a file has been uploaded
+        if (input.files.length > 0) {
+            // Create a new file input element
+            var newInput = document.createElement('input');
+            newInput.type = 'file';
+            newInput.name = 'files';
+            newInput.className = 'form-control';
+            newInput.onchange = function() { handleFileChange(this); };
+
+            // Append new input to the div
+            document.getElementById('filesContainer').appendChild(newInput);
+        }
+    }
+</script>
+{% endblock script %}

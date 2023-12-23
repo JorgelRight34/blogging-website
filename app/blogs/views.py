@@ -1,15 +1,16 @@
 from flask import abort, render_template, request, redirect, url_for, flash
 from flask_login import current_user, login_required
 from . import blogs
-from ..models import Blog, Comment, File
+from ..models import Blog, Comment, Like, File
 from .. import db
 import os
 from uuid import uuid1
 from werkzeug.utils import secure_filename
+from sqlalchemy import or_
 
 
-@login_required
 @blogs.route('/comment/<int:post_id>', methods=['GET', 'POST'])
+@login_required
 def comment(post_id):
     if request.method == "POST":
         # Get body
@@ -25,8 +26,8 @@ def comment(post_id):
     return render_template('blogs/comment.html')
 
 
-@login_required
 @blogs.route('/delete_comment/<int:comment_id>')
+@login_required
 def delete_comment(comment_id):
     # Get comment
     comment = Comment.query.filter_by(id=comment_id).first()
@@ -44,8 +45,8 @@ def delete_comment(comment_id):
     return redirect(request.referrer or url_for('main.index'))
 
 
-@login_required
 @blogs.route('/delete_post/<int:post_id>')
+@login_required
 def delete_post(post_id):
     # Get post
     post = Blog.query.filter_by(id=int(post_id)).first()
@@ -60,8 +61,27 @@ def delete_post(post_id):
         return redirect(request.referrer or url_for('main.index'))
 
 
+@blogs.route('/like_post/<int:post_id>')
 @login_required
+def like_post(post_id):
+    # Get post
+    post = Blog.query.filter_by(id=int(post_id)).first()
+    # Verify if user has already liked the post
+    like = Like.query.filter_by(blog_id=post.id, user_id=current_user.id).first()
+    if like:
+        flash("You have already liked the post")
+        return redirect(request.referrer or url_for('main.index'))
+
+    # Make like instance and save it to the database
+    like = Like(blog_id=post.id, user_id=current_user.id)
+    db.session.add(like)
+    db.session.commit()
+    
+    return redirect(request.referrer or url_for('main.index'))
+
+
 @blogs.route('/new_post', methods=['GET', 'POST'])
+@login_required
 def new_post():
     if request.method == "POST":
         # Initialize input variables
@@ -93,7 +113,7 @@ def new_post():
                 filename = f'{uuid1()} {secure_filename(file.filename)}'
                 
                 # Get filename
-                static_path = f"static\\images\\post files\\{filename}"
+                static_path = f"images/post files/{filename}"
                 filename = os.path.join("app\\static\\images\\post files", filename)
 
                 # Save file
@@ -115,12 +135,32 @@ def new_post():
 
 
 @blogs.route('/post/<int:post_id>')
+@login_required
 def post(post_id):
     # Get post
     post = Blog.query.filter_by(id=post_id).first()
 
     # Render template
     return render_template("blogs/post.html", post=post)
+
+
+@blogs.route('/search_post', methods=["POST"])
+def search_post():
+    if request.method == "POST":
+        # Get search's input
+        search = request.form.get("q")
+
+        # Search post's titles like 'q'
+        posts = Blog.query.filter(or_(Blog.body.ilike(f"%{search}%")), (Blog.title.ilike(f"%{search}%"))).order_by(Blog.title).all()
+        # If there are not matches notify user
+        if not posts:
+            flash("No matches found")
+
+        # Render template
+        return render_template('home.html', posts=posts)
+    
+    return redirect(request.referrer or url_for('main.index'))
+   
 
 
 

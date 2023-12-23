@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ current_user.username }}{% endblock title %}
+{% block title %}{{ user.username }}{% endblock title %}
 
 {% block content %}
 <div class="container">
@@ -8,11 +8,17 @@
     <div class="container">
         <div class="row">
             <div class="col">
-                <img src="" alt="User profile photo">
+                <img src="{{ url_for('static', filename=user.profile_pic) }}" alt="User profile photo" class="img-thumbnail">
+                {% if current_user.id == user.id %}
+                    <form enctype="multipart/form-data" action="{{ url_for('auth.set_profile_pic') }}" method="post">
+                        <input type="file" class="form-control" id="profile_pic" name="profile_pic">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                {% endif %}
             </div>
             <div class="col">
                 <div class="row">
-                    <h3>{{ user.username }} Followers = {{ user.followers() }}</h3>
+                    <h3>{{ user.username }} Followers = {{ user.get_followers() }}</h3>
                     <a class="btn btn-primary" href="{{ url_for('auth.follow', username=user.username) }}">Follow</a>
                 </div>
             </div>

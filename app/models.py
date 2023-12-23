@@ -1,7 +1,7 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
 from itsdangerous import TimedSerializer as Serializer
-from flask import current_app, flash
+from flask import current_app, url_for
 from flask_login import UserMixin, current_user
 from . import db, login_manager
 from datetime import datetime
@@ -15,18 +15,23 @@ class Blog(db.Model):
     author = db.Column(db.Integer, db.ForeignKey('users.id'))
     date = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     comments = db.relationship('Comment', backref='blog', cascade='all, delete-orphan')
+    likes = db.relationship('Like', backref='blog', cascade='all, delete-orphan')
     files = db.relationship('File', backref='blog', cascade='all, delete-orphan')
-
-    def get_files(self):
-        # Get post's files
-        files = File.query.filter_by(blog_id=self.id).all()
-        print(files)
-        return files
 
     def get_author(self):
         # Get author's user
         user = User.query.filter_by(id=self.author).first()
         return user
+    
+    def get_files(self):
+        # Get post's files
+        files = File.query.filter_by(blog_id=self.id).all()
+        return files
+    
+    def get_likes(self):
+        # Get post's likes
+        likes = Like.query.filter_by(blog_id=self.id).all()
+        return likes
     
     def delete_post(self):
         if current_user.id == self.author:
@@ -67,8 +72,11 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(64), unique=True, index=True)
     username = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
-    blogs = db.relationship('Blog', backref='user')
+    profile_pic = db.Column(db.String, default='images/profile photos/default_profile_pic.jpg')
+    blogs = db.relationship('Blog', backref='user', cascade='all, delete-orphan')
     comments = db.relationship('Comment', backref='user')
+    followers = db.relationship('Follow', backref='user', foreign_keys='Follow.followed_id')
+    likes = db.relationship('Like', backref='user')
 
     confirmed = db.Column(db.Boolean, default=False)
     
@@ -110,33 +118,28 @@ class User(UserMixin, db.Model):
         return user
 
     def follow(self, username):
-        print("Entramos al follow")
         # Follow user if user is not following user
         if username != self.username:
             if not self.is_following(username):
-                print("If not...")
                 # If user is not following user then follow the user
                 # Get user with 'username' as username
                 user = User.get_user(username)
 
                 # Make a follow instance if user was found
                 if user:
-                    print("If user...")
                     follow = Follow(follower_id=current_user.id, followed_id=user.id)
 
                     # Save to the database
                     db.session.add(follow)
                     db.session.commit()
                 else:
-                    print("Else 1")
                     raise ValueError
             else:
-                print("Else 2")
                 raise ValueError
         else:
             raise ValueError
         
-    def followers(self):
+    def get_followers(self):
         # Get followers
         followers = Follow.query.filter_by(followed_id=self.id)
 
@@ -210,6 +213,14 @@ class File(db.Model):
     path = db.Column(db.String, primary_key=True)
     blog_id = db.Column(db.Integer, db.ForeignKey('blogs.id'))
 
+
+class Like(db.Model):
+    __tablename__ = 'Likes'
+    id = db.Column(db.Integer, primary_key=True)
+    blog_id = db.Column(db.Integer, db.ForeignKey('blogs.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    
 
 @login_manager.user_loader
 def load_user(user_id):

@@ -3,6 +3,9 @@ from flask_login import login_user, logout_user, login_required, current_user
 from . import auth
 from .. import db
 from ..models import User, Blog
+from uuid import uuid1
+from werkzeug.utils import secure_filename
+import os
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
@@ -29,19 +32,14 @@ def login():
                 # when a user wants to visit a protected url without
                 # permission next stores the protected url, in case this
                 # didn't occur then next is None.
-                next = request.args.get('next')
                 flash("You have logged in!")
-                if next:
-                    # Redirect to the protected url
-                    return redirect(next)
-                else:
-                    # Redirect to main page
-                    return redirect(url_for('main.index'))
+                return redirect(request.referrer or url_for('main.index'))
         else:
             flash('Invalid credentials')
         
     # If accesed view via GET method
     return render_template('auth/login.html')
+
 
 @auth.route('/logout')
 @login_required
@@ -60,6 +58,7 @@ def register():
         username = request.form.get('username')
         password = request.form.get('password')
         confirmation_password = request.form.get('confirmation_password')
+        profile_pic = request.form.get('profile_pic')
 
         # Avoid empty inputs
         if not email:
@@ -81,7 +80,6 @@ def register():
             flash("Must enter confirmation password")
             return render_template('auth/register.html')
         
-
         if password == confirmation_password:
             # Create instance of User
             user = User(email=email, username=username, password=password)
@@ -91,6 +89,11 @@ def register():
 
             # Commit
             db.session.commit()
+
+            # Upload profile pic if given
+            if profile_pic:
+                print("If profile_pic")
+                upload_profile_pic(profile_pic)
 
             # Redirect to home page with a flash message
             flash('You can now <a href="{{ url_for("auth.login") }}>log in!</a>')
@@ -129,6 +132,32 @@ def follow(username):
     # Redirect user
     return redirect(request.referrer or url_for('main.index'))
     
+
+@auth.route('/upload_profile_pic', methods=["POST"])
+@login_required
+def set_profile_pic():
+    file = request.files.get("profile_pic")
+    upload_profile_pic(file)
+    return redirect(request.referrer or url_for('auth.index'))
+
+
+
+def upload_profile_pic(file):
+    # Embbed filename with uuid and make sure the filename
+    # is safe with secure_filename
+    filename = f'{uuid1()} {secure_filename(file.filename)}'
+    print(filename)
+
+    # Get filename
+    static_path = f"images/profile photos/{filename}"
+    filename = os.path.join("app\\static\\images\\profile photos", filename)
+
+    # Save file
+    file.save(filename)
+
+    # Create file object, and add it to the session 
+    current_user.profile_pic = static_path
+    db.session.commit()
 
 
 
