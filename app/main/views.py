@@ -9,5 +9,8 @@ def index():
     # Get all posts from the blogs table ordered descended by date
     posts = Blog.query.order_by(Blog.date.desc()).all()
 
+    # Get all users of the database
+    users = User.query.all()
+
     # Render home template
-    return render_template('home.html', posts=posts)
+    return render_template('home.html', posts=posts, users=users)

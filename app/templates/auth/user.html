@@ -4,22 +4,63 @@
 
 {% from 'macros.html' import render_post_card %}
 
-{% block content %}
-<div class="container bg-white p-4 w-50">
-    {% for post in posts %}
-        {{ render_post_card(post, current_user, loop.index) }}
-        <br />
-    {% endfor %}
-</div> 
-{% endblock content %}
+{% block side_navbar %}
+{% endblock side_navbar %}
 
 {% block extra_column %}
-<div class="p-4">
-    <div class="card">
+{% if user.posts %}
+    <div class="container flex-container w-75 p-4">
+        <div class="container" >
+            {% for post in posts %}
+                {{ render_post_card(post, current_user, loop.index) }}
+                <br />
+            {% endfor %}
+        </div> 
+        <div>
+            <div class="card">
+                <div class="card-header">
+                    {% if current_user.id == user.id %}
+                        <form enctype="multipart/form-data" action="{{ url_for('auth.set_profile_pic') }}" method="post">
+                            <input type="file" class="form-control" id="profile_pic" name="profile_pic">
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                    {% endif %}
+                    <div class="mb-2">
+                        <a href="{{ url_for('auth.profile', username=user) }}" class="text-decoration-none mb-2">
+                            <a href="{{ url_for('auth.set_profile_pic') }}">
+                                <img src="{{ url_for('static', filename=user.profile_pic) }}" class="profile_pic" style="height: 50px; width: 50px;">
+                            </a>
+                            <span class="card-title"><b>{{ user }}</b></span>
+                            <span class="m-lg-2">
+                                | {{ user.email }}
+                            </span>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Posts: {{ user.blogs|count }}</h5>
+                    <p class="card-text">Following: {{ user.following|count }}</p>
+                    <p class="card-text">Followers: {{ user.followers|count }}</p>
+                    <a href="{{ url_for('auth.follow', username=user) }}" class="btn btn-primary">Follow</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+<div class="container p-4">
+    <div class="card w-50 mx-auto">
         <div class="card-header">
+            {% if current_user.id == user.id %}
+                <form enctype="multipart/form-data" action="{{ url_for('auth.set_profile_pic') }}" method="post">
+                    <input type="file" class="form-control" id="profile_pic" name="profile_pic">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            {% endif %}
             <div class="mb-2">
                 <a href="{{ url_for('auth.profile', username=user) }}" class="text-decoration-none mb-2">
-                    <img src="{{ url_for('static', filename=user.profile_pic) }}" class="profile_pic" style="height: 50px; width: 50px;">
+                    <a href="{{ url_for('auth.set_profile_pic') }}">
+                        <img src="{{ url_for('static', filename=user.profile_pic) }}" class="profile_pic" style="height: 50px; width: 50px;">
+                    </a>
                     <span class="card-title"><b>{{ user }}</b></span>
                     <span class="m-lg-2">
                         | {{ user.email }}
@@ -35,4 +76,5 @@
         </div>
     </div>
 </div>
+{% endif %}
 {% endblock extra_column %}

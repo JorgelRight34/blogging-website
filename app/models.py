@@ -43,6 +43,7 @@ class Comment(db.Model):
     blog_id = db.Column(db.Integer, db.ForeignKey('blogs.id'), nullable=False)
     body = db.Column(db.Text, nullable=False)
     date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    likes = db.relationship('Like', backref='comment', cascade='all, delete-orphan')
 
     def get_author(self):
         # Get author's user
@@ -310,7 +311,8 @@ class File(db.Model):
 class Like(db.Model):
     __tablename__ = 'Likes'
     id = db.Column(db.Integer, primary_key=True)
-    blog_id = db.Column(db.Integer, db.ForeignKey('blogs.id'), nullable=False)
+    blog_id = db.Column(db.Integer, db.ForeignKey('blogs.id'), nullable=True)
+    comment_id = db.Column(db.Integer, db.ForeignKey('comments.id'), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     

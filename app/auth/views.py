@@ -74,7 +74,7 @@ def register():
         username = request.form.get('username')
         password = request.form.get('password')
         confirmation_password = request.form.get('confirmation_password')
-        profile_pic = request.form.get('profile_pic')
+        profile_pic = request.files.get('profile_pic')
 
         # Avoid empty inputs
         if not email:
@@ -107,12 +107,14 @@ def register():
             db.session.commit()
 
             # Upload profile pic if given
+            print(f"profile_pic = {profile_pic}")
             if profile_pic:
                 print("If profile_pic")
-                upload_profile_pic(profile_pic)
+                upload_profile_pic(profile_pic, user.username)
 
             # Redirect to home page with a flash message
             flash('You can now <a href="{{ url_for("auth.login") }}>log in!</a>')
+            login_user(user, False)
             return redirect(url_for('main.index'))
 
     # If accesed view via GET method
@@ -170,12 +172,15 @@ def follow(username):
 @login_required
 def set_profile_pic():
     file = request.files.get("profile_pic")
-    upload_profile_pic(file)
+    upload_profile_pic(file, current_user.username)
     return redirect(request.referrer or url_for('auth.index'))
 
 
 
-def upload_profile_pic(file):
+def upload_profile_pic(file, user):
+    # Get user
+    user = User.query.filter_by(username=user).first()
+
     # Embbed filename with uuid and make sure the filename
     # is safe with secure_filename
     filename = f'{uuid1()} {secure_filename(file.filename)}'
@@ -189,7 +194,7 @@ def upload_profile_pic(file):
     file.save(filename)
 
     # Create file object, and add it to the session 
-    current_user.profile_pic = static_path
+    user.profile_pic = static_path
     db.session.commit()
 
 
