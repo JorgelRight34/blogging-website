@@ -1,40 +1,38 @@
 {% extends 'base.html' %}
+
+{% block title %}{{ user }}{% endblock %}
+
 {% from 'macros.html' import render_post_card %}
 
-{% block title %}{{ user.username }}{% endblock title %}
-
 {% block content %}
-<div class="container">
-    <!-- User information-->
-    <div class="container">
-        <div class="row">
-            <div class="col">
-                <img src="{{ url_for('static', filename=user.profile_pic) }}" alt="User profile photo" class="img-thumbnail">
-                {% if current_user.id == user.id %}
-                    <form enctype="multipart/form-data" action="{{ url_for('auth.set_profile_pic') }}" method="post">
-                        <input type="file" class="form-control" id="profile_pic" name="profile_pic">
-                        <button type="submit" class="btn btn-primary">Submit</button>
-                    </form>
-                {% endif %}
-            </div>
-            <div class="col">
-                <div class="row">
-                    <h3>{{ user.username }} Followers = {{ user.get_followers() }}</h3>
-                    {% if current_user.is_authenticated and current_user.is_following(user.username) %}
-                        <a class="btn btn-primary" href="{{ url_for('auth.unfollow', username=user.username) }}">Unfollow</a>
-                    {% else %}
-                        <a class="btn btn-primary" href="{{ url_for('auth.follow', username=user.username) }}">Follow</a>
-                    {% endif %}
-                </div>
+<div class="container bg-white p-4 w-50">
+    {% for post in posts %}
+        {{ render_post_card(post, current_user, loop.index) }}
+        <br />
+    {% endfor %}
+</div> 
+{% endblock content %}
+
+{% block extra_column %}
+<div class="p-4">
+    <div class="card">
+        <div class="card-header">
+            <div class="mb-2">
+                <a href="{{ url_for('auth.profile', username=user) }}" class="text-decoration-none mb-2">
+                    <img src="{{ url_for('static', filename=user.profile_pic) }}" class="profile_pic" style="height: 50px; width: 50px;">
+                    <span class="card-title"><b>{{ user }}</b></span>
+                    <span class="m-lg-2">
+                        | {{ user.email }}
+                    </span>
+                </a>
             </div>
         </div>
+        <div class="card-body">
+            <h5 class="card-title">Posts: {{ user.blogs|count }}</h5>
+            <p class="card-text">Following: {{ user.following|count }}</p>
+            <p class="card-text">Followers: {{ user.followers|count }}</p>
+            <a href="{{ url_for('auth.follow', username=user) }}" class="btn btn-primary">Follow</a>
+        </div>
     </div>
-
-    <!-- User activities -->
-    <div class="container bg-white w-50 p-4" >
-        {% for post in posts %}
-            {{ render_post_card(post, current_user, loop.index ) }}
-        {% endfor %}
-    </div> 
 </div>
-{% endblock content %}
+{% endblock extra_column %}

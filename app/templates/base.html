@@ -13,7 +13,7 @@
     </head>
     <body class="bg-light">
         {% block navbar %}
-            <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
                 <div class="container-fluid">
                     <a class="navbar-brand" href="{{ url_for('main.index') }}">Blog App</a>
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -75,20 +75,37 @@
             </nav>
         {% endblock navbar %}
 
-        {% block sidenavbar %}
-        {% endblock sidenavbar %}
+        <div class="flex-container">
+            {% block side_navbar %}
+                <div class="bg-white border side_navbar" style="height: 100%;">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <div class="mb-2">
+                                <a href="{{ url_for('auth.profile', username=current_user) }}" class="text-decoration-none mb-2">
+                                    <img src="{{ url_for('static', filename=current_user.profile_pic) }}" class="profile_pic" style="height: 50px; width: 50px;">
+                                    <span class="card-title"><b>{{ current_user }}</b></span>
+                                    <span class="m-lg-2">
+                                        | {{ current_user.email }}
+                                    </span>
+                                </a>
+                            </div>
+                        </li>
+                        <li class="list-group-item">A second item</li>
+                        <li class="list-group-item">A third item</li>
+                        <li class="list-group-item">A fourth item</li>
+                        <li class="list-group-item">And a fifth one</li>
+                        <li class="list-group-item" >And a fifth one</li>
+                    </ul>
+                </div>
+            {% endblock side_navbar %}
 
-        <div class="container">
-            {% for message in get_flashed_messages() %}
-            <div class="alert alert-danger m-4" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close m-lg-5" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            {% endfor %}
+            {% block content %}
+            {% endblock content %}
+
+            {% block extra_column %}
+            {% endblock extra_column %}
         </div>
-        
-        {% block content %}
-        {% endblock content %}
+       
         
 
         <!-- Bootstrap JavaScript -->

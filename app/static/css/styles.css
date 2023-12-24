@@ -12,3 +12,17 @@
 {
     color: red;
 }
+
+
+.side_navbar 
+{
+    width: 20%;
+}
+
+
+.flex-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start; /* Align items to the start of the flex container */
+    align-items: flex-start; /* Align items to the start of the flex container */
+}

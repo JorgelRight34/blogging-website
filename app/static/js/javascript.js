@@ -3,6 +3,7 @@ function update_likes(like_button, text)
 {
     // Get likes's text element
     let likes_text = document.getElementById(text);
+    let likes = 'likes'
 
     // Change icon color
     if (like_button.style.color != 'red') {
@@ -13,7 +14,10 @@ function update_likes(like_button, text)
         // Change icon's text to 'Like'
         like_button.querySelector("#text").textContent = ' Liked';
         // Add +1 to likes count
-        likes_text.textContent = parseInt(likes_text.textContent) + 1;
+        if (parseInt(likes_text.textContent) + 1 == 1) {
+            likes = ' like'
+        }
+        likes_text.textContent = parseInt(likes_text.textContent) + 1 + likes;
     }
     else {
         // Change icon color
@@ -23,7 +27,7 @@ function update_likes(like_button, text)
         // Change icon's text to 'Like'
         like_button.querySelector("#text").textContent = ' Like';
         // Substract -1 to likes count
-        likes_text.textContent = parseInt(likes_text.textContent) - 1;
+        likes_text.textContent = parseInt(likes_text.textContent) - 1 + ' likes';
 
     }
 }

@@ -107,7 +107,6 @@ def unlike_post(post_id):
     return '', 204
 
 
-
 @login_required
 @blogs.route('/new_post', methods=['GET', 'POST'])
 @login_required
@@ -133,14 +132,11 @@ def new_post():
         db.session.add(blog)
         db.session.commit()
         print("Post saved")
-        return redirect(url_for('main.index'))
 
         # Get blog object
         # Save files
         if files:
-            print("If files")
             for file in files:
-                print(file.filename)
                 # Embbed filename with uuid and make sure the filename
                 # is safe with secure_filename
                 filename = f'{uuid1()} {secure_filename(file.filename)}'

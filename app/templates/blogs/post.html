@@ -5,11 +5,12 @@
 
 {% block content %}
 <div class="p-4">
-    <div class="container rounded shadow-sm bg-white">
+    <!-- Container -->
+    <div class="container rounded shadow-sm bg-white" style="height: 600px;">
         {% set author = post.get_author() %}
         <div class="row">
-            <!-- Leftt column -->
-            <div class="col-md-6 d-flex align-items-center">
+            <!-- Left column -->
+            <div class="col-md-6 d-flex align-items-center border p-4">
                 {{ render_carousel(post, 'postImages') }}
             </div>
             <!-- Right column -->
@@ -32,7 +33,7 @@
                 </div>
                 <hr>
                 <!-- Comments -->
-                <div class="row pb-4" style="padding-right: 1.5rem; padding-left: 1.5rem; overflow: auto;">
+                <div class="row" style="padding-right: 1.5rem; padding-left: 1.5rem; overflow: auto; height: 378px;">
                     <div class="row border rounded p-2 mb-2">
                         <form method="post" action="{{ url_for('blogs.comment', post_id=post.id) }}">
                             <div class="mb-3">
@@ -47,7 +48,7 @@
                             <button type="submit" class="btn btn-primary">Submit</button>
                         </form>
                    </div>
-                    {% for comment in post.comments %}
+                    {% for comment in post.comments|sort(attribute='date', reverse=true) %}
                         {% set author = comment.get_author() %}
                        <div class="row border rounded p-2 mb-2">
                             <!-- Upper row -->
@@ -76,3 +77,7 @@
     </div>
 </div>
 {% endblock content %}
+
+{% block extra_column %}
+
+{% endblock extra_column %}

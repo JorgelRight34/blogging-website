@@ -22,11 +22,6 @@ class Blog(db.Model):
         user = User.query.filter_by(id=self.author).first()
         return user
     
-    def get_likes(self):
-        # Get post's likes
-        likes = Like.query.filter_by(blog_id=self.id).all()
-        return likes
-    
     def delete_post(self):
         if current_user.id == self.author:
             # Delete from the session
