@@ -2,9 +2,20 @@
 
 {% block title %}Blog App{% endblock %}
 
+<<<<<<< HEAD
 {% block content %}
 <div class="container bg-white w-75 p-4" >
     
+=======
+{% from 'macros.html' import render_post_card %}
+
+{% block content %}
+<div class="container bg-white w-50 p-4" >
+    {% for post in posts %}
+        {{ render_post_card(post, current_user, loop.index) }}
+        <br />
+    {% endfor %}
+>>>>>>> 1109eee
 </div> 
 
 {% endblock content %}

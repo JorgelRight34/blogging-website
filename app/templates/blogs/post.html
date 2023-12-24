@@ -1,9 +1,14 @@
 {% extends 'base.html' %}
+<<<<<<< HEAD
+=======
+{% from "macros.html" import render_carousel, render_profile_pic %}
+>>>>>>> 1109eee
 
 {% block title %}{{ post.title }}{% endblock title %}
 
 {% block content %}
 <div class="p-4">
+<<<<<<< HEAD
     <div class="container border rounded shadow-sm p-4 bg-white" style="max-width: 50%;">
         <div class="mb-4">
             <h3>New Post</h3>
@@ -16,6 +21,74 @@
             <div class="mb-3">
                 <label for="body" class="form-label">Body</label>
                 <p>{{ post.body }}</p>
+=======
+    <div class="container rounded shadow-sm bg-white">
+        {% set author = post.get_author() %}
+        <div class="row">
+            <!-- Leftt column -->
+            <div class="col-md-6 d-flex align-items-center">
+                {{ render_carousel(post, 'postImages') }}
+            </div>
+            <!-- Right column -->
+            <div class="col-md-6 border p-4">
+                <!-- Header -->
+                <div class="row">
+                    <div class="mb-2">
+                        <a href="{{ url_for('auth.profile', username=author) }}" class="text-decoration-none mb-2">
+                            <img src="{{ url_for('static', filename=author.profile_pic) }}" class="profile_pic" style="height: 50px; width: 50px;">
+                            <span class="card-title"><b>{{ author }}</b></span>
+                            <span class="m-lg-2">
+                                | {{ post.date.strftime('%Y-%m-%d %H:%M:%S') }}
+                            </span>
+                        </a>
+                    </div>
+                    <div class="mb-2">
+                        <h3 class="card-title">{{ post.title }}</h3>
+                        <p>{{ post.body }}</p>
+                    </div>
+                </div>
+                <hr>
+                <!-- Comments -->
+                <div class="row pb-4" style="padding-right: 1.5rem; padding-left: 1.5rem; overflow: auto;">
+                    <div class="row border rounded p-2 mb-2">
+                        <form method="post" action="{{ url_for('blogs.comment', post_id=post.id) }}">
+                            <div class="mb-3">
+                                <label for="body" class="form-label">
+                                    Comment as 
+                                    <a href="{{ url_for('auth.profile', username=current_user) }}">
+                                        {{ current_user }}
+                                    </a>
+                                </label>
+                                <textarea class="form-control" id="body" name="body" placeholder="What are your thoughts?" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                   </div>
+                    {% for comment in post.comments %}
+                        {% set author = comment.get_author() %}
+                       <div class="row border rounded p-2 mb-2">
+                            <!-- Upper row -->
+                            <div class="row">
+                                <a href="{{ url_for('auth.profile', username=author) }}" class="text-decoration-none mb-2">
+                                    <img src="{{ url_for('static', filename=author.profile_pic) }}" class="profile_pic" style="height: 50px; width: 50px;">
+                                    <span class="card-title"><b>{{ author }}</b></span>
+                                    <span class="m-lg-2">
+                                        | {{ comment.date.strftime('%Y-%m-%d %H:%M:%S') }}
+                                    </span>
+                                </a>
+                                <hr>
+                            </div>
+                            <!-- Comment -->
+                            <div class="row">
+                                <p class="card-body">
+                                    {{ comment.body }}
+                                </p>
+                            </div>
+                       </div>
+                       <br />
+                    {% endfor %}
+                </div>
+>>>>>>> 1109eee
             </div>
         </div>
     </div>

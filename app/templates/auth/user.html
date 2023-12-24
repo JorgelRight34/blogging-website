@@ -1,6 +1,12 @@
 {% extends 'base.html' %}
+<<<<<<< HEAD
 
 {% block title %}{{ current_user.username }}{% endblock title %}
+=======
+{% from 'macros.html' import render_post_card %}
+
+{% block title %}{{ user.username }}{% endblock title %}
+>>>>>>> 1109eee
 
 {% block content %}
 <div class="container">
@@ -8,17 +14,37 @@
     <div class="container">
         <div class="row">
             <div class="col">
+<<<<<<< HEAD
                 <img src="" alt="User profile photo">
             </div>
             <div class="col">
                 <div class="row">
                     <h3>{{ current_user.username }}</h3>
+=======
+                <img src="{{ url_for('static', filename=user.profile_pic) }}" alt="User profile photo" class="img-thumbnail">
+                {% if current_user.id == user.id %}
+                    <form enctype="multipart/form-data" action="{{ url_for('auth.set_profile_pic') }}" method="post">
+                        <input type="file" class="form-control" id="profile_pic" name="profile_pic">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                {% endif %}
+            </div>
+            <div class="col">
+                <div class="row">
+                    <h3>{{ user.username }} Followers = {{ user.get_followers() }}</h3>
+                    {% if current_user.is_authenticated and current_user.is_following(user.username) %}
+                        <a class="btn btn-primary" href="{{ url_for('auth.unfollow', username=user.username) }}">Unfollow</a>
+                    {% else %}
+                        <a class="btn btn-primary" href="{{ url_for('auth.follow', username=user.username) }}">Follow</a>
+                    {% endif %}
+>>>>>>> 1109eee
                 </div>
             </div>
         </div>
     </div>
 
     <!-- User activities -->
+<<<<<<< HEAD
     <div class="container">
         <div class="row">
             <h3>My Posts</h3>
@@ -40,5 +66,12 @@
             {% endfor %}
         </div>
     </div>
+=======
+    <div class="container bg-white w-50 p-4" >
+        {% for post in posts %}
+            {{ render_post_card(post, current_user, loop.index ) }}
+        {% endfor %}
+    </div> 
+>>>>>>> 1109eee
 </div>
 {% endblock content %}

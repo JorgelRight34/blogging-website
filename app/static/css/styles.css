@@ -1,0 +1,14 @@
+.profile_pic 
+{
+    height: 30px;
+    width: 30px;
+    border-radius: 50%;
+}
+.like {
+    color: black;
+    text-decoration: none;
+}
+.like:hover
+{
+    color: red;
+}

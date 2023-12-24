@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}New post{% endblock title %}
+
+{% block content %}
+<div class="p-4">
+    <div class="container border rounded shadow-sm p-4 bg-white" style="max-width: 50%;">
+        <form method="post">
+            <div class="mb-3">
+                <label for="body" class="form-label">Body</label>
+                <textarea class="form-control" id="body" name="body" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

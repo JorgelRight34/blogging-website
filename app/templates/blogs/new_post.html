@@ -8,7 +8,11 @@
         <div class="mb-4">
             <h3>New Post</h3>
         </div>
+<<<<<<< HEAD
         <form method="post">
+=======
+        <form method="post" enctype="multipart/form-data">
+>>>>>>> 1109eee
             <div class="mb-3">
                 <label for="title" class="form-label">Title</label>
                 <input class="form-control" id="title" name="title" aria-describedby="title" required>
@@ -17,12 +21,22 @@
                 <label for="body" class="form-label">Body</label>
                 <textarea class="form-control" id="body" name="body" required></textarea>
             </div>
+<<<<<<< HEAD
             <div class="mb-3">
                 <label for="files class="form-label">Photos/Videos</label>
                 <input class="form-control" type="file" id="files" name="files" multiple>
+=======
+            <div class="mb-3" id="filesContainer">
+                <label for="files" class="form-label">Photos/Videos</label>
+                <input class="form-control" type="file" id="files" name="files" onchange="addFileInput(this)" accept="image/*,video/*">
+>>>>>>> 1109eee
             </div>
             <button type="submit" class="btn btn-primary">Submit</button>
         </form>
     </div>
 </div>
 {% endblock %}
+
+{% block script %}
+
+{% endblock script %}

@@ -1,0 +1,104 @@
+{% macro render_post_image(filename) %}
+    <img class="img-fluid" src="{{ url_for('static', filename=filename) }}">
+{% endmacro %}
+
+{% macro render_post_video(file) %}
+    <video width="640" height="360" controls>
+        <source src="{{ url_for('static', filename=file.path) }}" type="video/{{ file.file_extension }}">
+        Your browser does not support the video tag.
+    </video>
+{% endmacro %}
+
+{% macro render_profile_pic(author, size) %}
+    <img src="{{ url_for('static', filename=author.profile_pic) }}" class="profile_pic">
+{% endmacro %}
+
+{% macro render_carousel(post, id) %} 
+    <div id="{{ id }}" class="carousel slide">
+        <div class="carousel-indicators">
+            {% for file in post.files %}
+                {% if loop.index == 1 %}
+                    <button type="button" data-bs-target="{{ id }}" data-bs-slide-to="{{ loop.index0 }}" class="active" aria-current="true" aria-label="Slide {{ loop.index }}"></button>
+                {% else %}
+                    <button type="button" data-bs-target="{{ id }}" data-bs-slide-to="{{ loop.index0 }}" aria-label="Slide {{ loop.index }}"></button>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div class="carousel-inner">
+            {% for file in post.files %}
+                {% if loop.index == 1 %}
+                    <div class="carousel-item active">
+                        {% if file.type == 'image' %}
+                            {{ render_post_image(file.path) }}
+                        {% elif file.type == 'video' %}
+                            {{ render_post_video(file) }}
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="carousel-item">
+                        {% if file.type == 'image' %}
+                            {{ render_post_image(file.path) }}
+                        {% elif file.type == 'video' %}
+                            {{ render_post_video(file) }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#{{ id }}" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#{{ id }}" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+{% endmacro %}
+
+{% macro render_post_card(post, current_user, loop_index) %}
+    <div class="card">
+        <div class="card-header">
+            <span class="text-muted">Posted by <a href="{{ url_for('auth.profile', username=post.user ) }}">{{ render_profile_pic(post.user) }} {{ post.user }}</a> |
+            {{ post.date.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <h5 class="card-title">{{ post.title }}</h5>
+            </div>
+            <div class="row">
+                <p class="card-body-text">{{ post.body }}</p>
+            </div>
+            <div class="row">
+                {% if post.files | length == 1 %}
+                    {% set file = post.files[0] %}
+                    {% if post.files[0].type == 'image' %}
+                        {{ render_post_image(file.path) }}
+                    {% elif post.files[0].type == 'video' %}
+                        {{ render_post_video(file) }}
+                    {% endif %}
+                {% else %}         
+                    {% set id = 'post' ~ loop_index  ~ 'Images' %}
+                    {{ render_carousel(post, id) }}
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-footer text-muted">
+            <div>
+                {% set id = 'post' ~ loop_index ~ 'Likes' %}
+                {% if current_user.is_authenticated and current_user.likes(post.id) %}
+                    <a class="text-decoration-none" style="color: red;" href="{{ url_for('blogs.unlike_post', post_id=post.id) }}" onclick="update_likes(this, '{{ id }}')"><i class="fa-solid fa-heart" id="icon"></i><span id="text"> Liked</span></a>
+                {% else %}
+                    <a class="like" href="{{ url_for('blogs.like_post', post_id=post.id) }}" onclick="update_likes(this, '{{ id }}')"><i class="fa-regular fa-heart" id="icon"></i><span id="text"> Liked</span></a>
+                {% endif %}
+                <a class="text-decoration-none mx-4" style="color: black;" href="{{ url_for('blogs.comment', post_id=post.id) }}"><i class="fa-regular fa-comment"></i> Comment</a>
+                <a class="text-decoration-none" style="color: black;" href="{{ url_for('blogs.post', post_id=post.id) }}"><i class="fa-regular fa-comments"></i> See comments</a>
+                {% if current_user.id == post.author %} 
+                    <a class="text-decoration-none mx-4" style="color: black;" href="{{ url_for('blogs.delete_post', post_id=post.id) }}"><i class="fa-regular fa-trash-can"></i> Delete  </a>
+                {% endif %}
+            </div>
+            <p id="{{ id }}">{{ post.get_likes() | length }}</p>
+        </div>
+    </div>
+{% endmacro %}
+
