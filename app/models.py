@@ -2,7 +2,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
 from itsdangerous import TimedSerializer as Serializer
 from flask import current_app, url_for
-from flask_login import UserMixin, current_user
+from flask_login import UserMixin, current_user, logout_user
 from . import db, login_manager
 from datetime import datetime
 
@@ -22,11 +22,6 @@ class Blog(db.Model):
         # Get author's user
         user = User.query.filter_by(id=self.author).first()
         return user
-    
-    def get_files(self):
-        # Get post's files
-        files = File.query.filter_by(blog_id=self.id).all()
-        return files
     
     def get_likes(self):
         # Get post's likes
@@ -74,9 +69,11 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     profile_pic = db.Column(db.String, default='images/profile photos/default_profile_pic.jpg')
     blogs = db.relationship('Blog', backref='user', cascade='all, delete-orphan')
-    comments = db.relationship('Comment', backref='user')
-    followers = db.relationship('Follow', backref='user', foreign_keys='Follow.followed_id')
-    likes = db.relationship('Like', backref='user')
+    comments = db.relationship('Comment', backref='user', cascade='all, delete-orphan')
+    followers = db.relationship('Follow', backref='user', foreign_keys='Follow.followed_id', cascade='all, delete-orphan')
+    likes = db.relationship('Like', backref='user', cascade='all, delete-orphan')
+    notifications = db.relationship('Notification', backref='user', foreign_keys='Notification.user_id', cascade='all, delete-orphan')
+    actions = db.relationship('Notification', backref='notificator', foreign_keys='Notification.notificator_id', cascade='all, delete-orphan')
 
     confirmed = db.Column(db.Boolean, default=False)
     
@@ -97,6 +94,71 @@ class User(UserMixin, db.Model):
         self.confirmed = True
         db.session.add(self)
         return True
+    
+    def like(self, post_id):
+        # Get post
+        post = Blog.query.filter_by(id=int(post_id)).first()
+
+        # Verify if user has already liked the post
+        like = Like.query.filter_by(blog_id=post.id, user_id=current_user.id).first()
+        if like:
+            raise ValueError
+        
+        # Make like instance and save it to the database
+        like = Like(blog_id=post.id, user_id=current_user.id)
+        db.session.add(like)
+
+        # Make notification for post's author
+        if post.get_author().id != self.id:
+            action = f'{self.username} has liked your post "{post.title}"'
+            notification = Notification(user_id=post.get_author().id, notificator_id=self.id, action=action)
+            db.session.add(notification)
+
+        # Commit
+        db.session.commit()
+
+    def likes(self, post_id):
+        # Return True if user likes the post with its id as 'post_id'
+        like = Like.query.filter_by(blog_id=post_id, user_id=self.id).first()
+
+        if like:
+            return True
+        else:
+            return False
+        
+    def unlike(self, post_id):
+        # Search for like
+        like = Like.query.filter_by(blog_id=post_id, user_id=self.id).first()
+
+        if like:
+            # If user has liked delete the like
+            db.session.delete(like)
+            db.session.commit()
+        else:
+            return ValueError
+        
+    def unfollow(self, username):
+        # Follow user if user is not following user
+        if username != self.username:
+            if not self.is_following(username):
+                # If user is following user then ufollow the user
+                # Get user with 'username' as username
+                user = User.query.filter_by(username=username).first()
+
+                # Get follow instance if user was found
+                if user:
+                    follow = Follow.query.filter_by(follower_id=self.id, followed_id=user.id).first()
+
+                    # Save to the database
+                    db.session.delete(follow)
+                    db.session.commit()
+                else:
+                    raise ValueError
+            else:
+                raise ValueError
+        else:
+            raise ValueError
+
 
     @property
     def password(self):
@@ -108,14 +170,6 @@ class User(UserMixin, db.Model):
 
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
-    
-    @staticmethod
-    def get_user(username):
-        # Get user with 'username' as username
-        user = User.query.filter_by(username=username).first()
-
-        # Return user
-        return user
 
     def follow(self, username):
         # Follow user if user is not following user
@@ -123,11 +177,16 @@ class User(UserMixin, db.Model):
             if not self.is_following(username):
                 # If user is not following user then follow the user
                 # Get user with 'username' as username
-                user = User.get_user(username)
+                user = User.query.filter_by(username=username).first()
 
                 # Make a follow instance if user was found
                 if user:
                     follow = Follow(follower_id=current_user.id, followed_id=user.id)
+                    action = f'{self.username} is following you'
+
+                    # Make notification
+                    notification = Notification(user_id=user.id, notificator_id=self.id, action=action)
+                    db.session.add(notification)
 
                     # Save to the database
                     db.session.add(follow)
@@ -144,38 +203,32 @@ class User(UserMixin, db.Model):
         followers = Follow.query.filter_by(followed_id=self.id)
 
         # Return numbers of followers
-        print(followers.count())
         return followers.count()
     
     def is_following(self, username):
         # Find user with username 'username'
-        user = User.get_user(username)
-        print(f"User = {user}")
+        user = User.query.filter_by(username=username).first()
 
         # Check if user already following user
         if user:
             print("If user")
             follow = Follow.query.filter_by(follower_id=self.id, followed_id=user.id).first()
-            print(follow)
             # Return True if user is following, return False otherwise
             if follow:
-                print("if follow")
-                print(follow.follower_id)
                 return True
             else:
-                print("Else is_following 1")
                 return False
         else:
-            print("Else 3")
             return False
         
 
     def unfollow(self, username):
-        # If user is following the unfollow
-        user = User.get_user(username)
+        # If user is following then unfollow
+        user = User.query.filter_by(username=username).first()
+
         if self.is_following(user.username):
             # Get follow
-            follow = Follow.query.filter_by(follower_id=self.id, followed_id=user.id)
+            follow = Follow.query.filter_by(follower_id=self.id, followed_id=user.id).first()
             
             # Eliminate follow from the session
             db.session.delete(follow)
@@ -183,12 +236,8 @@ class User(UserMixin, db.Model):
         else:
             raise ValueError
         
+        
     def comment(self, post_id, body):
-        # Comment post
-
-        # Get post
-        post = Blog.query.filter_by(id=post_id)
-
         # Comment post
         comment = Comment(user_id=self.id, blog_id=post_id, body=body)
 
@@ -196,9 +245,22 @@ class User(UserMixin, db.Model):
         db.session.add(comment)
         db.session.commit()
 
+    def delete_profile(self):
+        # Delete current user
+        db.session.delete(current_user)
+
+        # Log out before deleting
+        logout_user()
+
+        # Delete current user
+        db.session.commit()
+
 
     def __repr__(self):
         return '<User %r>' % self.username
+    
+    def __str__(self):
+        return self.username
     
 
 class Follow(db.Model):
@@ -213,6 +275,43 @@ class File(db.Model):
     path = db.Column(db.String, primary_key=True)
     blog_id = db.Column(db.Integer, db.ForeignKey('blogs.id'))
 
+    @property
+    def type(self):
+        # Image file types extensions
+        image_file_types = [
+            'jpg', 'jpeg', 'png', 'gif', 'tiff', 'tif', 'bmp', 'webp', 'svg', 'ico',
+            'raw', 'heif', 'heic', 'crx'
+        ]
+
+        # Video file types extensions
+        video_file_types = [
+            'mp4', 'avi', 'mkv', 'mov', 'wmv', 'flv', 'webm', '3gp', 'ogg', 'mpg', 'mpeg', 'ts'
+        ]
+
+        # Get file .extension
+        type = self.path.split('.')
+        max_index = len(type) - 1
+        type = type[max_index]
+
+        # Return "image" if file is an image
+        if type in image_file_types:
+            print('image')
+            return 'image'
+        # Return "video" if file is a video
+        elif type in video_file_types:
+            return 'video'
+        else:
+            print('else')
+            return type
+
+    @property
+    def file_extension(self):
+        # Get file .extension
+        type = self.path.split('.')
+        return type[1]
+        
+
+
 
 class Like(db.Model):
     __tablename__ = 'Likes'
@@ -222,6 +321,23 @@ class Like(db.Model):
     date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     
 
+class Notification(db.Model):
+    __tablename__ = 'notifications'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    notificator_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    action = db.Column(db.String, nullable=False)
+    date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    def delete_notification(self):
+        # Delete notification
+        db.session.delete(self)
+        db.session.commit()
+    
+    def __str__(self):
+        return f'{self.action} | {self.date.strftime("%Y-%m-%d %H:%M:%S")}'
+
+    
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))

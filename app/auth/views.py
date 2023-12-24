@@ -7,6 +7,15 @@ from uuid import uuid1
 from werkzeug.utils import secure_filename
 import os
 
+
+@auth.route('/delete_profile')
+@login_required
+def delete_profile():
+    # Delete profile
+    current_user.delete_profile()
+    return redirect(request.referrer or url_for('main.index'))
+
+
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == "POST":
@@ -29,11 +38,18 @@ def login():
                 # remember_me = True
                 login_user(user, remember_me)
 
-                # when a user wants to visit a protected url without
-                # permission next stores the protected url, in case this
-                # didn't occur then next is None.
+                # Register potential protected url
+                next = request.args.get('next')
+
+                # When a user wants to visit a protected url without
+                # permission "next" stores the protected url, in case this
+                # didn't occur then next is "None"
+                if next is None or not next.startswith('/'):
+                    next = url_for('main.index')
+
+                # Redirect user to the corresponding url
                 flash("You have logged in!")
-                return redirect(request.referrer or url_for('main.index'))
+                return redirect(next)
         else:
             flash('Invalid credentials')
         
@@ -70,7 +86,7 @@ def register():
         if not username:
             flash("Must enter a username")
             return render_template('auth/register.html')
-        if User.get_user(username):
+        if User.query.filter_by(username=username).first():
             flash("There's  already an account with this username")
             return render_template('auth/register.html')
         if not password:
@@ -114,9 +130,26 @@ def profile(username):
     # Render template
     return render_template('auth/user.html', user=user, posts=posts)
 
+@login_required
+@auth.route('/unfollow/<username>')
+def unfollow(username):
+    # Don't allow to ufollow oneself
+    if current_user.username == username:
+        flash("Cannot unfollow yourself")
+        return redirect(request.referrer or url_for('main.index'))
+    
+    # Unfollow user if following
+    try:
+        current_user.unfollow(username)
+    except:
+        flash("Already not following")
+
+    # Redirect user
+    return redirect(request.referrer or url_for('main.index'))
+    
 
 @login_required
-@auth.route("/follow/<username>")
+@auth.route('/follow/<username>')
 def follow(username):
     # Don't allow to follow oneself
     if current_user.username == username:
