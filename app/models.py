@@ -1,12 +1,7 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedSerializer as Serializer
-<<<<<<< HEAD
-from flask import current_app
-from flask_login import UserMixin, current_user
-=======
 from flask import current_app, url_for
 from flask_login import UserMixin, current_user, logout_user
->>>>>>> 1109eee
 from . import db, login_manager
 from datetime import datetime
 
@@ -18,17 +13,6 @@ class Blog(db.Model):
     body = db.Column(db.Text, nullable=False)
     author = db.Column(db.Integer, db.ForeignKey('users.id'))
     date = db.Column(db.DateTime, default=datetime.utcnow, index=True)
-<<<<<<< HEAD
-
-    @property
-    def author(self):
-        user = User.query.filter_by(id=self.author).first()
-        return user
-
-    def __repr__(self):
-        return self.title
-    
-=======
     comments = db.relationship('Comment', backref='blog', cascade='all, delete-orphan')
     likes = db.relationship('Like', backref='blog', cascade='all, delete-orphan')
     files = db.relationship('File', backref='blog', cascade='all, delete-orphan')
@@ -75,7 +59,6 @@ class Comment(db.Model):
         db.session.delete(self)
         db.session.commit()
 
->>>>>>> 1109eee
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -83,9 +66,6 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(64), unique=True, index=True)
     username = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
-<<<<<<< HEAD
-    blogs = db.relationship('Blog', backref='user', lazy='dynamic')
-=======
     profile_pic = db.Column(db.String, default='images/profile photos/default_profile_pic.jpg')
     blogs = db.relationship('Blog', backref='user', cascade='all, delete-orphan')
     comments = db.relationship('Comment', backref='user', cascade='all, delete-orphan')
@@ -93,7 +73,6 @@ class User(UserMixin, db.Model):
     likes = db.relationship('Like', backref='user', cascade='all, delete-orphan')
     notifications = db.relationship('Notification', backref='user', foreign_keys='Notification.user_id', cascade='all, delete-orphan')
     actions = db.relationship('Notification', backref='notificator', foreign_keys='Notification.notificator_id', cascade='all, delete-orphan')
->>>>>>> 1109eee
 
     confirmed = db.Column(db.Boolean, default=False)
     
@@ -114,8 +93,6 @@ class User(UserMixin, db.Model):
         self.confirmed = True
         db.session.add(self)
         return True
-<<<<<<< HEAD
-=======
     
     def like(self, post_id):
         # Get post
@@ -181,7 +158,6 @@ class User(UserMixin, db.Model):
         else:
             raise ValueError
 
->>>>>>> 1109eee
 
     @property
     def password(self):
@@ -228,11 +204,6 @@ class User(UserMixin, db.Model):
         # Return numbers of followers
         return followers.count()
     
-<<<<<<< HEAD
-    def __repr__(self):
-        return '<User %r>' % self.username
-
-=======
     def is_following(self, username):
         # Find user with username 'username'
         user = User.query.filter_by(username=username).first()
@@ -290,7 +261,6 @@ class User(UserMixin, db.Model):
     def __str__(self):
         return self.username
     
->>>>>>> 1109eee
 
 class Follow(db.Model):
     __tablename__ = 'follows'

@@ -3,8 +3,6 @@ from flask_login import login_user, logout_user, login_required, current_user
 from . import auth
 from .. import db
 from ..models import User, Blog
-<<<<<<< HEAD
-=======
 from uuid import uuid1
 from werkzeug.utils import secure_filename
 import os
@@ -17,7 +15,6 @@ def delete_profile():
     current_user.delete_profile()
     return redirect(request.referrer or url_for('main.index'))
 
->>>>>>> 1109eee
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
@@ -131,9 +128,6 @@ def profile(username):
     posts = Blog.query.filter_by(author=user.id).all()
 
     # Render template
-<<<<<<< HEAD
-    return render_template('auth/user.html', posts=posts)
-=======
     return render_template('auth/user.html', user=user, posts=posts)
 
 @login_required
@@ -197,7 +191,6 @@ def upload_profile_pic(file):
     # Create file object, and add it to the session 
     current_user.profile_pic = static_path
     db.session.commit()
->>>>>>> 1109eee
 
 
 

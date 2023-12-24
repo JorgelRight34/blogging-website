@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-from flask import abort, render_template, request, redirect, url_for, flash
-=======
 from flask import abort, render_template, request, redirect, url_for, flash, make_response
->>>>>>> 1109eee
 from flask_login import current_user, login_required
 from . import blogs
 from ..models import Blog, Comment, Like, File, Notification
@@ -171,26 +167,6 @@ def new_post():
     # If accesed view via GET method
     return render_template('blogs/new_post.html')
 
-<<<<<<< HEAD
-@login_required
-@blogs.route('/delete/<int:post>')
-def delete_post(post):
-    # Get post
-    post = Blog.query.filter_by(id=int(post)).first()
-
-    if current_user.id == post.author:
-        # Delete from the session
-        db.session.delete(post)
-        
-        # Commit changes
-        db.session.commit()
-        return redirect(url_for('main.index'))
-    else:
-        flash("Cannot delete a post that is not yours")
-        return redirect(url_for('main.index'))
-    
-
-=======
 
 @blogs.route('/post/<int:post_id>')
 @login_required
@@ -225,4 +201,3 @@ def search_post():
 
 
 
->>>>>>> 1109eee
