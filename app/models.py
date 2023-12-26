@@ -41,11 +41,14 @@ class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     blog_id = db.Column(db.Integer, db.ForeignKey('blogs.id'), nullable=False)
+    comment_id = db.Column(db.Integer, db.ForeignKey('comments.id'), nullable=True)
     body = db.Column(db.Text, nullable=False)
     date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     likes = db.relationship('Like', backref='comment', cascade='all, delete-orphan')
+    replies = db.relationship('Comment', backref='comment_replies', remote_side=[id], cascade='all, delete-orphan', single_parent=True)
 
-    def get_author(self):
+    @property
+    def author(self):
         # Get author's user
         user = User.query.filter_by(id=self.user_id).first()
         return user
@@ -63,7 +66,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
     profile_pic = db.Column(db.String, default='images/profile photos/default_profile_pic.jpg')
-    blogs = db.relationship('Blog', backref='user', cascade='all, delete-orphan')
+    posts = db.relationship('Blog', backref='user', cascade='all, delete-orphan')
     comments = db.relationship('Comment', backref='user', cascade='all, delete-orphan')
     followers = db.relationship('Follow', backref='user', foreign_keys='Follow.followed_id', cascade='all, delete-orphan')
     likes = db.relationship('Like', backref='user', cascade='all, delete-orphan')
@@ -90,7 +93,7 @@ class User(UserMixin, db.Model):
         db.session.add(self)
         return True
     
-    def like(self, post_id):
+    def like_post(self, post_id):
         # Get post
         post = Blog.query.filter_by(id=int(post_id)).first()
 
@@ -112,7 +115,30 @@ class User(UserMixin, db.Model):
         # Commit
         db.session.commit()
 
-    def likes(self, post_id):
+    def like_comment(self, comment_id):
+        # Get post
+        comment = Comment.query.filter_by(id=int(comment_id)).first()
+
+        # Verify if user has already liked the post
+        like = Like.query.filter_by(comment_id=comment.id, user_id=current_user.id).first()
+        if like:
+            print(like)
+            raise ValueError
+        
+        # Make like instance and save it to the database
+        like = Like(comment_id=comment.id, user_id=current_user.id)
+        db.session.add(like)
+
+        # Make notification for post's author
+        if comment.get_author().id != self.id:
+            action = f'{self.username} has liked your post "{comment.body}"'
+            notification = Notification(user_id=comment.get_author().id, notificator_id=self.id, action=action)
+            db.session.add(notification)
+
+        # Commit
+        db.session.commit()
+
+    def likes_post(self, post_id):
         # Return True if user likes the post with its id as 'post_id'
         like = Like.query.filter_by(blog_id=post_id, user_id=self.id).first()
 
@@ -121,9 +147,29 @@ class User(UserMixin, db.Model):
         else:
             return False
         
-    def unlike(self, post_id):
+    def likes_comment(self, comment_id):
+        # Return True if user likes the post with its id as 'post_id'
+        like= Like.query.filter_by(comment_id=comment_id, user_id=self.id).first()
+        print(like)
+        if like:
+            return True
+        else:
+            return False
+        
+    def unlike_post(self, post_id):
         # Search for like
         like = Like.query.filter_by(blog_id=post_id, user_id=self.id).first()
+
+        if like:
+            # If user has liked delete the like
+            db.session.delete(like)
+            db.session.commit()
+        else:
+            return ValueError
+        
+    def unlike_comment(self, comment_id):
+        # Search for like
+        like = Like.query.filter_by(comment_id=comment_id, user_id=self.id).first()
 
         if like:
             # If user has liked delete the like
@@ -303,7 +349,8 @@ class File(db.Model):
     def file_extension(self):
         # Get file .extension
         type = self.path.split('.')
-        return type[1]
+        max_index = len(type) - 1
+        return type[max_index]
         
 
 

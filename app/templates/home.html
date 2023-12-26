@@ -2,79 +2,38 @@
 
 {% block title %}Blog App{% endblock %}
 
-{% from 'macros.html' import render_post_card %}
+{% from 'macros.html' import render_post_card, posts_pagination_widget, users_pagination_widget, home_widget, users_widget, posts_widget %}
 
 {% block side_navbar %}
 {% endblock %}
 
 {% block content %}
 <div class="container flex-container w-75 p-4">
+
+    <!-- Left column -->
     <div class="container" >
         {% for post in posts %}
             {{ render_post_card(post, current_user, loop.index) }}
             <br />
         {% endfor %}
+        {{ posts_pagination_widget(posts_pagination, request.endpoint) }}
     </div> 
+
+    <!-- Right column -->
     <div>
-        <div class="card mb-4" style="width: 18rem;">
-            <!-- <img src="..." class="card-img-top" alt="..."> -->
-            <div class="card-body">
-                <h5 class="card-title">Home Page</h5>
-                <p class="card-text">Your personal home page. Come here to check in with new posts.</p>
-                <a href="#" class="btn btn-primary mb-2">Create New Post</a>
-                <a href="#" class="btn btn-primary">Search Friends</a>
-            </div>
-        </div>
-        <div class="card mb-4" style="width: 18rem;">
-            <!-- <img src="..." class="card-img-top" alt="..."> -->
-            <div class="card-body">
-                <h5 class="card-title">Users</h5>
-                <p class="card-text">See other users posts and follow them to support them!</p>
-                <ul class="list-group">
-                    {% for user in users %}
-                        <li class="list-group-item">
-                            <a href="{{ url_for('auth.profile', username=user) }}" class="text-decoration-none mb-2">
-                                <img src="{{ url_for('static', filename=user.profile_pic) }}" class="profile_pic" style="height: 50px; width: 50px;">
-                                <span class="card-title"><b>{{ user }}</b></span>
-                            </a>
-                        </li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
-        <div class="card mb-4" style="width: 18rem;">
-            <!-- <img src="..." class="card-img-top" alt="..."> -->
-            <div class="p-2">
-            <h5 class="card-title p-2">Recent posts</h5>
-            <ul class="list-group list-group-flush">
-                {% for post in posts %}
-                    <li class="list-group-item">
-                        <div class="row">
-                            
-                            <div class="row">
-                                <div class="col-md-6">
-                                    {% if post.files %}
-                                    {% set file = post.files[0] %}
-                                    {% if file.type == 'image' %}
-                                        <img src="{{ url_for('static', filename=file.path )}}" style="height: 80px; width: 90px;">
-                                    {% elif file.type == 'video' %}
-                                        <video width="80" height="90">
-                                            <source src="{{ url_for('static', filename=file.path) }}" type="video/{{ file.file_extension }}">
-                                            Your browser does not support the video tag.
-                                        </video>
-                                    {% endif %}
-                                {% endif %}
-                                </div>
-                                <div class="col-md-6">
-                                    <h5 class="" style="font-size: 16px;">{{ post.title }}</h5>
-                                    <p><span class="text-muted" style="font-size: 10px;">{{ post.likes|length }} likes . {{ post.comments|length }} comments</span></p>
-                                </div>
-                            </div>
-                        </div>
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
+
+        {{ home_widget() }}
+
+
+        {{ users_widget(users, users_pagination) }}
+
+
+        {% if other_posts %}
+            {{ posts_widget(other_posts) }}
+        {% else %}
+            {{ posts_widget(posts) }}
+        {% endif %}
+
     </div>
 </div>
 

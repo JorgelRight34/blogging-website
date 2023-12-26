@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ current_user }}{% endblock title %}
+
+{% block side_navbar %}
+{% endblock side_navbar %}
+
+{% block content %}
+<div class="p-4 container">
+    <div class="container border rounded shadow-sm p-4 bg-white" style="max-width: 50%;">
+        <div class="mb-4">
+            <h3>Edit Profile</h3>
+        </div>
+        <form method="post" action="{{ url_for('auth.edit_profile') }}" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="email" class="form-label">Email address</label>
+                <input type="email" class="form-control" id="email" name="email" aria-describedby="email" value="{{ current_user.email }}">
+                <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+            </div>
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input class="form-control" id="username" name="username" aria-describedby="username" value="{{ current_user.username }}">
+            </div>
+            <div class="mb-3">
+                <label for="profile_pic" class="form-label">Profile Photo</label>
+                <input type="file" class="form-control" id="profile_pic" name="profile_pic" value="{{ current_user.profile_pic }}">
+            </div>
+            <div class="mb-3 flex-container">
+                <button type="submit" class="btn btn-primary">Edit Profile</button>
+                <a class="btn btn-primary mx-4" href="url_for('auth.delete_profile')">Delete Profile</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_column %}
+{% endblock extra_column %}

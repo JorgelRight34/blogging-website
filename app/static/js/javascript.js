@@ -31,3 +31,19 @@ function update_likes(like_button, text)
 
     }
 }
+
+// Add extra file input button
+function addFileInput(input) {
+    // Verify a file has been uploaded
+    if (input.files.length > 0) {
+        // Create a new file input element
+        var newInput = document.createElement('input');
+        newInput.type = 'file';
+        newInput.name = 'files';
+        newInput.className = 'form-control';
+        newInput.onchange = function() { addFileInput(this); };
+
+        // Append new input to the div
+        document.getElementById('filesContainer').appendChild(newInput);
+    }
+}

@@ -1,4 +1,4 @@
-from flask import abort, render_template, request, redirect, url_for, flash, make_response
+from flask import abort, current_app, render_template, request, redirect, url_for, flash, make_response
 from flask_login import current_user, login_required
 from . import blogs
 from ..models import Blog, Comment, Like, File, Notification
@@ -20,7 +20,7 @@ def comment(post_id):
         current_user.comment(post_id, body)
 
         # Redirect
-        return redirect(url_for('main.index'))
+        return redirect(request.referrer or url_for('main.index'))
     
     # If accesed view by GET method
     return render_template('blogs/comment.html')
@@ -33,7 +33,7 @@ def delete_comment(comment_id):
     comment = Comment.query.filter_by(id=comment_id).first()
 
     # Verify if user is the owner of the comment
-    if not current_user.id == comment.id:
+    if not current_user.id == comment.author.id:
         flash("You are not the owner of the comment")
         return redirect(request.referrer or url_for('main.index'))
     
@@ -84,7 +84,21 @@ def delete_post(post_id):
 def like_post(post_id):
     # Like post
     try:
-        current_user.like(post_id)
+        current_user.like_post(post_id)
+    except:
+        # If user has already liked post notify
+        pass
+    
+    # Redirect to the last page they were in or to the main page
+    return '', 204
+
+
+@blogs.route('/like_comment/<int:comment_id>')
+@login_required
+def like_comment(comment_id):
+    # Like post
+    try:
+        current_user.like_comment(comment_id)
     except:
         # If user has already liked post notify
         pass
@@ -98,7 +112,21 @@ def like_post(post_id):
 def unlike_post(post_id):
     # Like post
     try:
-        current_user.unlike(post_id)
+        current_user.unlike_post(post_id)
+    except:
+        # If user has already liked post notify
+        pass
+    
+    # Redirect to the last page they were in or to the main page
+    return '', 204
+
+
+@blogs.route('/unlike_comment/<int:comment_id>')
+@login_required
+def unlike_comment(comment_id):
+    # Like post
+    try:
+        current_user.unlike_comment(comment_id)
     except:
         # If user has already liked post notify
         pass
@@ -136,14 +164,30 @@ def new_post():
         # Get blog object
         # Save files
         if files:
+            files_len = len(files) 
+            # Counter
+            i = 1
             for file in files:
+                # Avoid empty file
+                if i == files_len:
+                    break
+
                 # Embbed filename with uuid and make sure the filename
                 # is safe with secure_filename
                 filename = f'{uuid1()} {secure_filename(file.filename)}'
+
+                # Define static_path which is the relative path to look for the file for flask
+                static_path = f"images/users/{current_user}/post files/{filename}"
                 
-                # Get filename
-                static_path = f"images/post files/{filename}"
-                filename = os.path.join("app\\static\\images\\post files", filename)
+                # Define server path
+                path = os.path.join(current_app.config["UPLOAD_DIRECTORY"], str(current_user), 'post files')
+
+                # If server path doesn't exists then create it
+                if not os.path.exists(path):
+                    os.makedirs(path)
+
+                # Join server's path with the file's name
+                filename = os.path.join(path, filename)
 
                 # Save file
                 file.save(filename)
@@ -152,6 +196,7 @@ def new_post():
                 file = File(path=static_path, blog_id=blog.id)
                 print(file)
                 db.session.add(file)
+                i += 1
 
         # Commit after adding each file
         db.session.commit()
@@ -174,23 +219,20 @@ def post(post_id):
     return render_template("blogs/post.html", post=post)
 
 
-@blogs.route('/search_post')
-def search_post():
-    # Get search's input
-    search = f'%{request.args.get("q")}%'
-    print(search)
+@blogs.route('/reply_comment/<comment_id>')
+def reply_comment(comment_id):
+    if request.method == "POST":
+        # Get body
+        body = request.form.get("body")
 
-    # Search post's titles like 'q'
-    posts = Blog.query.filter(or_((Blog.body.like(search)), (Blog.title.like(search)))).all()
-    print(Blog.query.filter(Blog.body.like(search)))
-    print(posts)
-    # If there are not matches notify user
-    if not posts:
-        flash("No matches found")
-        return redirect(request.referrer or url_for('main.index'))
+        # Comment
+        current_user.reply_comment(comment_id, body)
 
-    # Render template
-    return render_template('home.html', posts=posts)
+        # Redirect
+        return redirect(url_for('main.index'))
+    
+    # If accesed view by GET method
+    return render_template('blogs/comment.html')
     
 
    

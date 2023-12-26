@@ -1,12 +1,164 @@
+{{ moment.include_moment() }}
+
+{% macro home_widget() %}
+    <div class="card mb-4" style="width: 18rem;">
+        <!-- <img src="..." class="card-img-top" alt="..."> -->
+        <div class="card-body">
+            <h5 class="card-title">Home Page</h5>
+            <p class="card-text">Your personal home page. Come here to check in with new posts.</p>
+            <a href="{{ url_for('blogs.new_post') }}" class="btn btn-primary mb-2">Create New Post</a>
+            <div class="dropdown">
+                <button class="btn btn-primary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Search User
+                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        <div class="container bg-white rounded p-4">
+                            <form action="{{ url_for('main.search_user') }}">
+                                <label for="username" class="form-label">Username</label>
+                                <input id="username" class="form-control mb-2" name="q">
+                                <button class="btn btn-primary" type="submit">Submit</button>
+                            </form>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro posts_widget(posts) %}
+    <div class="card mb-4" style="width: 18rem;">
+        <!-- <img src="..." class="card-img-top" alt="..."> -->
+        <div class="p-2">
+            <h5 class="card-title p-2">Recent posts</h5>
+            <ul class="list-group list-group-flush">
+                {% for post in posts[:5] %}
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    {% if post.files %}
+                                    {% set file = post.files[0] %}
+                                    {% if file.type == 'image' %}
+                                        <img src="{{ url_for('static', filename=file.path )}}" style="height: 80px; width: 90px;">
+                                    {% elif file.type == 'video' %}
+                                        <video width="80" height="90">
+                                            <source src="{{ url_for('static', filename=file.path) }}" type="video/{{ file.file_extension }}">
+                                            Your browser does not support the video tag.
+                                        </video>
+                                    {% endif %}
+                                {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <h5 class="" style="font-size: 16px;">{{ post.title }}</h5>
+                                    <p><span class="text-muted" style="font-size: 10px;">{{ post.likes|length }} likes . {{ post.comments|length }} comments</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro users_widget(users, pagination) %}
+    <div class="card mb-4" style="width: 18rem;">
+        <!-- <img src="..." class="card-img-top" alt="..."> -->
+        <div class="card-body">
+            <h5 class="card-title">Users</h5>
+            <p class="card-text">See other users posts and follow them to support them!</p>
+            <ul class="list-group">
+                {% for user in users %}
+                    <li class="list-group-item">
+                        <a href="{{ url_for('auth.profile', username=user) }}" class="text-decoration-none mb-2">
+                            <img src="{{ url_for('static', filename=user.profile_pic) }}" class="profile_pic" style="height: 50px; width: 50px;">
+                            <span class="card-title"><b>{{ user }}</b></span>
+                        </a>
+                    </li>
+                {% endfor %}
+                {{ users_pagination_widget(pagination, request.endpoint) }}
+            </ul>
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro render_post_likes(current_user, post) %}
+    {% if current_user.is_authenticated and current_user.likes_post(post.id) %}
+        <a class="text-decoration-none" style="color: red;" href="{{ url_for('blogs.unlike_post', post_id=post.id) }}" onclick="update_likes(this, '{{ id }}')"><i class="fa-solid fa-heart" id="icon"></i><span id="text"> Liked</span></a>
+    {% else %}
+        <a class="like" href="{{ url_for('blogs.like_post', post_id=post.id) }}" onclick="update_likes(this, '{{ id }}')"><i class="fa-regular fa-heart" id="icon"></i><span id="text"> Liked</span></a>
+    {% endif %}
+{% endmacro %}
+
+{% macro user_card(user, current_user) %}
+    <div class="card-header">
+        <div class="mb-2">
+            <a href="{{ url_for('auth.profile', username=user) }}" class="text-decoration-none mb-2">
+                <a href="{{ url_for('auth.edit_profile') }}">
+                    <img src="{{ url_for('static', filename=user.profile_pic) }}" class="profile_pic" style="height: 50px; width: 50px;">
+                </a>
+                <span class="card-title"><b>{{ user }}</b></span>
+                <span class="m-lg-2">
+                    | {{ user.email }}
+                </span>
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">Posts: {{ user.blogs|count }}</h5>
+        <p class="card-text">Following: {{ user.following|count }}</p>
+        <p class="card-text">Followers: {{ user.followers|count }}</p>
+        {% if current_user.id == user.id %}
+            <a class="btn btn-primary" href="{{ url_for('auth.edit_profile') }}">Edit profile</a>
+        {% else %}
+            <a href="{{ url_for('auth.follow', username=user) }}" class="btn btn-primary">Follow</a>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% macro render_comment_likes(current_user, comment) %}
+    {% if current_user.is_authenticated and current_user.likes_comment(comment.id) %}
+        <a class="text-decoration-none" style="color: red;" href="{{ url_for('blogs.unlike_comment', comment_id=comment.id) }}" onclick="update_likes(this, '{{ id }}')"><i class="fa-solid fa-heart" id="icon"></i><span id="text"> Liked</span></a>
+    {% else %}
+        <a class="like" href="{{ url_for('blogs.like_comment', comment_id=comment.id) }}" onclick="update_likes(this, '{{ id }}')"><i class="fa-regular fa-heart" id="icon"></i><span id="text"> Like</span></a>
+    {% endif %}
+{% endmacro %}
+
+{% macro posts_pagination_widget(pagination, endpoint) %}
+    <div class="d-flex justify-content-center align-items-center">
+        {% if pagination.has_next %}
+            <a href="{{ url_for(endpoint, posts_page  = pagination.page + 1) }}">Next Page</a>
+        {% elif pagination.has_prev %}
+            <a href="{{ url_for(endpoint, posts_page = pagination.page - 1) }}">Previous Page</a>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% macro users_pagination_widget(pagination, endpoint) %}
+    <div class="d-flex justify-content-center align-items-center">
+        {% if pagination.has_next %}
+            <a href="{{ url_for(endpoint, users_page  = pagination.page + 1) }}">Next Page</a>
+        {% elif pagination.has_prev %}
+            <a href="{{ url_for(endpoint, users_page = pagination.page - 1) }}">Previous Page</a>
+        {% endif %}
+    </div>
+{% endmacro %}
+
 {% macro render_post_image(filename) %}
-    <img class="img-fluid" src="{{ url_for('static', filename=filename) }}">
+    <div class="d-flex align-items-center justify-content-center" style="max-height: 400px;" >
+        <img class="img-fluid" src="{{ url_for('static', filename=filename) }}" style="max-height: 400px; object-fit: contain;">
+    </div>
 {% endmacro %}
 
 {% macro render_post_video(file) %}
-    <video width="640" height="360" controls>
+<div class="d-flex align-items-center justify-content-center" style="max-height: 400px;" >
+    <video style="max-height: 400px; object-fit: contain;" controls>
         <source src="{{ url_for('static', filename=file.path) }}" type="video/{{ file.file_extension }}">
         Your browser does not support the video tag.
     </video>
+</div>
 {% endmacro %}
 
 {% macro render_profile_pic(author, size) %}
@@ -60,7 +212,7 @@
     <div class="card">
         <div class="card-header">
             <span class="text-muted">Posted by <a href="{{ url_for('auth.profile', username=post.user ) }}" class="text-decoration-none">{{ render_profile_pic(post.user) }} <b>{{ post.user }}</b></a> |
-            {{ post.date.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+            {{ moment(post.date).format('LL') }}</span>
         </div>
         <div class="card-body">
             <div class="row">
@@ -86,7 +238,7 @@
         <div class="card-footer text-muted">
             <div>
                 {% set id = 'post' ~ loop_index ~ 'Likes' %}
-                {% if current_user.is_authenticated and current_user.likes(post.id) %}
+                {% if current_user.is_authenticated and current_user.likes_post(post.id) %}
                     <a class="text-decoration-none" style="color: red;" href="{{ url_for('blogs.unlike_post', post_id=post.id) }}" onclick="update_likes(this, '{{ id }}')"><i class="fa-solid fa-heart" id="icon"></i><span id="text"> Liked</span></a>
                 {% else %}
                     <a class="like" href="{{ url_for('blogs.like_post', post_id=post.id) }}" onclick="update_likes(this, '{{ id }}')"><i class="fa-regular fa-heart" id="icon"></i><span id="text"> Liked</span></a>

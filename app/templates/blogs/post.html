@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% from "macros.html" import render_carousel, render_profile_pic %}
+{% from "macros.html" import render_carousel, render_profile_pic, render_post_video, render_post_image, render_post_likes, render_comment_likes %}
 
 {% block title %}{{ post.title }}{% endblock title %}
 
@@ -14,24 +14,37 @@
         <div class="row">
             <!-- Left column -->
             <div class="col-md-6 d-flex justify-content-center align-items-center border">
-                    {{ render_carousel(post, 'postImages') }}
+                <div style="height: 400px;">
+                    {% set id = 'postImages' %}
+                    {% if post.files|length == 1 %}
+                        {% set file = post.files[0] %}
+                        {% if file.type == 'image' %}
+                            {{ render_post_image(file.path) }}
+                        {% elif file.type == 'video' %}
+                            {{ render_post_video(file) }}
+                        {% endif %}
+                    {% else %}
+                        {{ render_carousel(post, id) }}
+                    {% endif %}
+                </div>
             </div>
             <!-- Right column -->
             <div class="col-md-6 border p-4">
                 <!-- Header -->
-                <div class="row">
+                <div class="row" style="overflow-y: auto; height: 139.4px; overflow-wrap: break-word;">
                     <div class="mb-2">
                         <a href="{{ url_for('auth.profile', username=author) }}" class="text-decoration-none mb-2">
                             <img src="{{ url_for('static', filename=author.profile_pic) }}" class="profile_pic" style="height: 50px; width: 50px;">
-                            <span class="card-title"><b>{{ author }}</b></span>
+                            <span class="card-title"><b> {{ author }}</b></span>
                             <span class="m-lg-2">
-                                | {{ post.date.strftime('%Y-%m-%d %H:%M:%S') }}
+                            | {{ post.date.strftime('%Y-%m-%d %H:%M:%S') }}
                             </span>
                         </a>
+                       {{ render_post_likes(current_user, post) }}
                     </div>
                     <div class="mb-2">
                         <h3 class="card-title">{{ post.title }}</h3>
-                        <p>{{ post.body }}</p>
+                        <p>{{ post.body }} | <span class="text-muted">{{ post.likes|length }} likes, {{ post.comments|length }} comments</span></p>
                     </div>
                 </div>
                 <hr>
@@ -52,7 +65,7 @@
                         </form>
                    </div>
                     {% for comment in post.comments|sort(attribute='date', reverse=true) %}
-                       {% set author = comment.get_author() %}
+                       {% set author = comment.author %}
                        <div class="row border rounded p-2 mb-2">
                             <!-- Upper row -->
                             <div class="row">
@@ -72,16 +85,16 @@
                                 </p>
                             </div>
                             <!-- Buttons -->
-                            <div class="row list-group-horizontal">
+                            <div class="row">
                                 {% set id = 'comment' ~ loop_index ~ 'Likes' %}
-                                {% if current_user.is_authenticated and current_user.likes(comment.id) %}
-                                    <a class="text-decoration-none" style="color: red;" href="{{ url_for('blogs.unlike_post', post_id=comment.id) }}" onclick="update_likes(this, '{{ id }}')"><i class="fa-solid fa-heart" id="icon"></i><span id="text"> Liked</span></a>
-                                {% else %}
-                                    <a class="like" href="{{ url_for('blogs.like_post', post_id=comment.id) }}" onclick="update_likes(this, '{{ id }}')"><i class="fa-regular fa-heart" id="icon"></i><span id="text"> Liked</span></a>
+                                <div>
+                                    {{ render_comment_likes(current_user, comment) }}
+                                    <a href="{{ url_for('blogs.reply_comment', comment_id=comment.id) }}">Reply</a>
+                                    <p><span id="{{ id }}">{{ comment.likes|length }} likes</span><br/>{{ comment.comments|length }} comments</p>
+                                </a>
+                                {% if current_user.id == post.author %} 
+                                    <a class="text-decoration-none mx-4" style="color: black;" href="{{ url_for('blogs.delete_comment', comment_id=comment.id) }}"><i class="fa-regular fa-trash-can"></i> Delete  </a>
                                 {% endif %}
-                                <a class="text-decoration-none" style="color: red;" href="{{ url_for('blogs.unlike_post', post_id=comment.id) }}" onclick="update_likes(this, '{{ id }}')"><i class="fa-solid fa-heart" id="icon"></i><span id="text"> Liked</span></a>
-                                <a>Reply</a>
-                                <p><span id="{{ id }}">{{ post.likes|length }}</span><br/>{{ post.comments|length }} comments</p>
                             </div>
                        </div>
                        <br />

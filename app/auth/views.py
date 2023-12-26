@@ -1,8 +1,9 @@
-from flask import render_template, redirect, request, url_for, flash
+from flask import current_app, render_template, redirect, request, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from . import auth
 from .. import db
 from ..models import User, Blog
+from ..main.views import get_posts_widget_context, get_users_widget_context
 from uuid import uuid1
 from werkzeug.utils import secure_filename
 import os
@@ -107,9 +108,7 @@ def register():
             db.session.commit()
 
             # Upload profile pic if given
-            print(f"profile_pic = {profile_pic}")
             if profile_pic:
-                print("If profile_pic")
                 upload_profile_pic(profile_pic, user.username)
 
             # Redirect to home page with a flash message
@@ -126,11 +125,30 @@ def profile(username):
     # Get username from the database
     user = User.query.filter_by(username=username).first()
 
-    # Get user's posts
-    posts = Blog.query.filter_by(author=user.id).all()
+    # Get asked page by the response, the 'type=int' means that if the
+    # asked page can't be converted to int then return the default value '1'
+    page = request.args.get('page', 1, type=int)
+
+    # Get user's (per_page) posts 
+    pagination = Blog.query.filter_by(author=user.id).paginate(
+        page=page, per_page=current_app.config['POSTS_PER_PAGE'], error_out=False
+    )
+
+    # Save posts
+    posts = pagination.items
+
+    # Get posts widget context
+    post_widget_context = get_posts_widget_context()
+    other_posts = post_widget_context['posts']
+
+    # Get users widget context
+    users_widget_context = get_users_widget_context()
+    users = users_widget_context['users']
+    users_pagination = users_widget_context['users_pagination']
 
     # Render template
-    return render_template('auth/user.html', user=user, posts=posts)
+    return render_template('auth/user.html', user=user, posts=posts, pagination=pagination, users=users, users_pagination=users_pagination, other_posts=other_posts)
+
 
 @login_required
 @auth.route('/unfollow/<username>')
@@ -168,13 +186,53 @@ def follow(username):
     return redirect(request.referrer or url_for('main.index'))
     
 
-@auth.route('/upload_profile_pic', methods=["POST"])
+@auth.route('/edit_profile/', methods=["GET", "POST"])
 @login_required
-def set_profile_pic():
-    file = request.files.get("profile_pic")
-    upload_profile_pic(file, current_user.username)
-    return redirect(request.referrer or url_for('auth.index'))
+def edit_profile():
+    if request.method == "POST":
+        # Initialize form inputs
+        email = request.form.get('email')
+        username = request.form.get('username')
+        password = request.form.get('password') 
+        confirmation_password = request.form.get('confirmation_password')
+        profile_pic = request.files.get('profile_pic')
 
+        # Avoid empty inputs
+        if not email:
+            flash("Must enter an email")
+            print("Must enter an email")
+            return render_template('auth/register.html')
+        if current_user.email != email :
+            if User.query.filter_by(email=email).first():
+                flash("There's already an user with this email")
+                print("There's already an user with this email")
+                return render_template('auth/edit_profile.html')
+        if not username:
+            flash("Must enter a username")
+            print("Must enter a username")
+            return render_template('auth/edit_profile.html')
+        if current_user.username != username:
+            if User.query.filter_by(username=username).first():
+                flash("There's  already an account with this username")
+                return render_template('auth/edit_profile.html')
+        
+        current_user.email = email
+        current_user.username = username
+
+        # Commit
+        db.session.commit()
+
+        # Upload profile pic if given
+        print("Hey!\n")
+        print(profile_pic.filename)
+        if profile_pic:
+            upload_profile_pic(profile_pic, current_user.username)
+
+        # Redirect to profile page with a flash message
+        return redirect(url_for('auth.profile', username=current_user.username))
+
+    # If accesed view via GET method
+    return render_template('auth/edit_profile.html')
 
 
 def upload_profile_pic(file, user):
@@ -184,12 +242,20 @@ def upload_profile_pic(file, user):
     # Embbed filename with uuid and make sure the filename
     # is safe with secure_filename
     filename = f'{uuid1()} {secure_filename(file.filename)}'
-    print(filename)
 
     # Get filename
-    static_path = f"images/profile photos/{filename}"
-    filename = os.path.join("app\\static\\images\\profile photos", filename)
+    static_path = f"images/users/{user}/profile photos/{filename}"
 
+    # Server path
+    path = os.path.join(current_app.config['UPLOAD_DIRECTORY'], "users", str(user), "profile photos")
+
+    # Join server's path with the file's name
+    filename = os.path.join(path, filename)
+
+    # If path doesn't exists create it
+    if not os.path.exists(path):
+        os.makedirs(path)
+    
     # Save file
     file.save(filename)
 
