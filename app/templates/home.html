@@ -2,18 +2,18 @@
 
 {% block title %}Blog App{% endblock %}
 
-{% from 'macros.html' import render_post_card, posts_pagination_widget, users_pagination_widget, home_widget, users_widget, posts_widget %}
+{% from 'macros.html' import render_post_card, posts_pagination_widget, users_pagination_widget, home_widget, users_widget, posts_widget, flashed_messages %}
 
 {% block side_navbar %}
 {% endblock %}
 
 {% block content %}
 <div class="container flex-container w-75 p-4">
-
     <!-- Left column -->
-    <div class="container" >
+    <div class="container w-50">
+        {{ flashed_messages() }}
         {% for post in posts %}
-            {{ render_post_card(post, current_user, loop.index) }}
+            {{ render_post_card(post, current_user, loop.index, moment(post.date).fromNow()) }}
             <br />
         {% endfor %}
         {{ posts_pagination_widget(posts_pagination, request.endpoint) }}

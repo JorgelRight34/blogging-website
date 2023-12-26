@@ -10,7 +10,7 @@
 <div class="p-4 container">
     <!-- Container -->
     <div class="container rounded shadow-sm bg-white" style="height: 600px;">
-        {% set author = post.get_author() %}
+        {% set author = post.user %}
         <div class="row">
             <!-- Left column -->
             <div class="col-md-6 d-flex justify-content-center align-items-center border">
@@ -65,7 +65,7 @@
                         </form>
                    </div>
                     {% for comment in post.comments|sort(attribute='date', reverse=true) %}
-                       {% set author = comment.author %}
+                       {% set author = comment.user %}
                        <div class="row border rounded p-2 mb-2">
                             <!-- Upper row -->
                             <div class="row">

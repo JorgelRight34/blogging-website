@@ -1,4 +1,12 @@
-{{ moment.include_moment() }}
+
+{% macro flashed_messages() %}
+    {% for message in get_flashed_messages() %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+{% endmacro %}
 
 {% macro home_widget() %}
     <div class="card mb-4" style="width: 18rem;">
@@ -96,18 +104,15 @@
     <div class="card-header">
         <div class="mb-2">
             <a href="{{ url_for('auth.profile', username=user) }}" class="text-decoration-none mb-2">
-                <a href="{{ url_for('auth.edit_profile') }}">
+                <a href="{{ url_for('auth.edit_profile') }}" class="text-decoration-none mb-2">
                     <img src="{{ url_for('static', filename=user.profile_pic) }}" class="profile_pic" style="height: 50px; width: 50px;">
                 </a>
                 <span class="card-title"><b>{{ user }}</b></span>
-                <span class="m-lg-2">
-                    | {{ user.email }}
-                </span>
             </a>
         </div>
     </div>
     <div class="card-body">
-        <h5 class="card-title">Posts: {{ user.blogs|count }}</h5>
+        <h5 class="card-title">Posts: {{ user.posts|count }}</h5>
         <p class="card-text">Following: {{ user.following|count }}</p>
         <p class="card-text">Followers: {{ user.followers|count }}</p>
         {% if current_user.id == user.id %}
@@ -153,12 +158,12 @@
 {% endmacro %}
 
 {% macro render_post_video(file) %}
-<div class="d-flex align-items-center justify-content-center" style="max-height: 400px;" >
-    <video style="max-height: 400px; object-fit: contain;" controls>
-        <source src="{{ url_for('static', filename=file.path) }}" type="video/{{ file.file_extension }}">
-        Your browser does not support the video tag.
-    </video>
-</div>
+    <div class="d-flex align-items-center justify-content-center" style="max-height: 400px;" >
+        <video style="max-height: 400px; object-fit: contain;" controls>
+            <source src="{{ url_for('static', filename=file.path) }}" type="video/{{ file.file_extension }}">
+            Your browser does not support the video tag.
+        </video>
+    </div>
 {% endmacro %}
 
 {% macro render_profile_pic(author, size) %}
@@ -208,11 +213,14 @@
     </div>
 {% endmacro %}
 
-{% macro render_post_card(post, current_user, loop_index) %}
+{% macro render_post_card(post, current_user, loop_index, date) %}
     <div class="card">
         <div class="card-header">
             <span class="text-muted">Posted by <a href="{{ url_for('auth.profile', username=post.user ) }}" class="text-decoration-none">{{ render_profile_pic(post.user) }} <b>{{ post.user }}</b></a> |
-            {{ moment(post.date).format('LL') }}</span>
+            {{ date }}</span>
+            {% if post.topic %}
+                <p class="text-muted">Topic: {{ post.topic }}</p>
+            {% endif %}
         </div>
         <div class="card-body">
             <div class="row">
@@ -253,4 +261,3 @@
         </div>
     </div>
 {% endmacro %}
-

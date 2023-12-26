@@ -48,14 +48,16 @@ def get_users_widget_context():
 @main.route('/', methods=['GET', 'POST'])
 def index():
     # Get posts widget context
-    post_widget_context = get_posts_widget_context()
-    posts = post_widget_context['posts']
-    posts_pagination = post_widget_context['posts_pagination']
+    posts_widget_context = get_posts_widget_context()
+    posts_pagination = posts_widget_context['posts_pagination']
 
     # Get users widget context
     users_widget_context = get_users_widget_context()
     users = users_widget_context['users']
     users_pagination = users_widget_context['users_pagination']
+
+    # Get posts
+    posts = posts_widget_context['posts']
 
     # Render home template
     return render_template('home.html', posts=posts, users=users, posts_pagination=posts_pagination, users_pagination=users_pagination)

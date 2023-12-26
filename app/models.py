@@ -16,14 +16,10 @@ class Blog(db.Model):
     comments = db.relationship('Comment', backref='blog', cascade='all, delete-orphan')
     likes = db.relationship('Like', backref='blog', cascade='all, delete-orphan')
     files = db.relationship('File', backref='blog', cascade='all, delete-orphan')
-
-    def get_author(self):
-        # Get author's user
-        user = User.query.filter_by(id=self.author).first()
-        return user
+    topic = db.Column(db.String, nullable=True)
     
     def delete_post(self):
-        if current_user.id == self.author:
+        if current_user == self.user:
             # Delete from the session
             db.session.delete(self)
             
@@ -46,14 +42,12 @@ class Comment(db.Model):
     date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     likes = db.relationship('Like', backref='comment', cascade='all, delete-orphan')
     replies = db.relationship('Comment', backref='comment_replies', remote_side=[id], cascade='all, delete-orphan', single_parent=True)
-
-    @property
-    def author(self):
-        # Get author's user
-        user = User.query.filter_by(id=self.user_id).first()
-        return user
     
     def delete_comment(self):
+        # Verify if user is the owner of the comment
+        if not current_user == self.user:
+            raise ValueError
+        
         # Delete comment from the database
         db.session.delete(self)
         db.session.commit()
@@ -238,6 +232,13 @@ class User(UserMixin, db.Model):
                 raise ValueError
         else:
             raise ValueError
+
+    @property
+    def following(self):
+        # Get users who self is following
+        following = Follow.query.filter_by(follower_id=self.id).all()
+        return following
+
         
     def get_followers(self):
         # Get followers
@@ -373,6 +374,10 @@ class Notification(db.Model):
     date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
     def delete_notification(self):
+        # Check if user is owner of the notification
+        if current_user != self.user:
+            raise ValueError
+
         # Delete notification
         db.session.delete(self)
         db.session.commit()

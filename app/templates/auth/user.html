@@ -12,7 +12,7 @@
     <div class="container flex-container w-75 p-4">
         <div class="container" >
             {% for post in posts %}
-                {{ render_post_card(post, current_user, loop.index) }}
+                {{ render_post_card(post, current_user, loop.index, moment(post.date).fromNow()) }}
                 <br />
             {% endfor %}
             {{ posts_pagination_widget(pagination, request.endpoint) }}

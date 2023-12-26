@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}News{% endblock title %}
+
+{% from 'macros.html' import users_pagination_widget, users_widget, posts_widget, flashed_messages %}
+
+{% block side_navbar %}
+{% endblock side_navbar %}
+
+{% block content %}
+<div class="container flex-container w-75 p-4">
+    <div class="container w-50">
+        {{ flashed_messages() }}
+        {% for post in posts %}
+            {% if post.title != '[Removed]' %}
+                <div class="card">
+                    <div class="card-header">
+                        <a href="{{ post.url }}">
+                            Posted by {{ post.author }}
+                        </a>
+                            <span class="text-muted">  | {{ moment(post.publishedAt).fromNow() }}</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <h5 class="card-title">{{ post.title }}</h5>
+                        </div>
+                        <div class="row">
+                            {% if post.description %}
+                                <p class="card-body-text">{{ post.description }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="row">
+                            {% if post.urlToImage %}
+                                <div class="d-flex align-items-center justify-content-center" style="max-height: 400px;" >
+                                    <img class="img-fluid" src="{{ post.urlToImage }}" style="max-height: 400px; object-fit: contain;">
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card-footer text-muted">
+                        <div class="mb-2">
+                            <a class="text-decoration-none mx-4" style="color: black;" href="{{ url_for('blogs.new_news_post', topic=post.title) }}"><i class="fa-regular fa-newspaper"></i> Make a post about this</a>
+                            <a class="text-decoration-none mx-4" style="color: black;" href="{{ url_for('blogs.new_post') }}"><i class="fa-regular fa-newspaper"></i> See posts about this</a>
+                        </div>
+                    </div>
+                </div>
+                <br />
+                {% endif %}
+        {% endfor %}
+        <div class="d-flex justify-content-center align-items-center">
+            {% if previous %}
+                <a href="{{ url_for(request.endpoint, news_page = news_page - 1) }}">Previous Page</a>
+            {% endif %}
+            {% if next %}
+                {% if q %}
+                    <a href="{{ url_for(request.endpoint, news_page  = news_page + 1, q = q) }}">Next Page</a>
+                {% else %}
+                    <a href="{{ url_for(request.endpoint, news_page  = news_page + 1) }}">Next Page</a>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div> 
+    <div>   
+        <div class="card mb-4" style="width: 18rem;">
+            <!-- <img src="..." class="card-img-top" alt="..."> -->
+            <div class="card-body">
+                <h5 class="card-title">News</h5>
+                <p class="card-text">News blogs here!</p>
+                <a href="{{ url_for('blogs.new_post') }}" class="btn btn-primary mb-2">Create New Post</a>
+                <div class="dropdown mb-2">
+                    <button class="btn btn-primary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Search User
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <div class="container bg-white rounded p-4">
+                                <form action="{{ url_for('main.search_user') }}">
+                                    <label for="username" class="form-label">Username</label>
+                                    <input id="username" class="form-control mb-2" name="q">
+                                    <button class="btn btn-primary" type="submit">Submit</button>
+                                </form>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <form class="d-flex" action="{{ url_for('blogs.search_news') }}">
+                    <input class="form-control me-2" name="q" type="search" placeholder="Search News" aria-label="Search">
+                    <button class="btn btn-outline-success" type="submit">Search</button>
+                </form>
+            </div>
+        </div>
+
+        {{ users_widget(users, users_pagination) }}
+
+        {% if other_posts %}
+            {{ posts_widget(other_posts) }}
+        {% endif %}
+
+    </div>
+</div>
+{% endblock content %}

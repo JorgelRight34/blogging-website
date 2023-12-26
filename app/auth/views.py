@@ -193,8 +193,6 @@ def edit_profile():
         # Initialize form inputs
         email = request.form.get('email')
         username = request.form.get('username')
-        password = request.form.get('password') 
-        confirmation_password = request.form.get('confirmation_password')
         profile_pic = request.files.get('profile_pic')
 
         # Avoid empty inputs
@@ -223,8 +221,6 @@ def edit_profile():
         db.session.commit()
 
         # Upload profile pic if given
-        print("Hey!\n")
-        print(profile_pic.filename)
         if profile_pic:
             upload_profile_pic(profile_pic, current_user.username)
 
