@@ -240,7 +240,7 @@ def upload_profile_pic(file, user):
     filename = f'{uuid1()} {secure_filename(file.filename)}'
 
     # Get filename
-    static_path = f"images/users/{user}/profile photos/{filename}"
+    static_path = f'images/users/{user}/profile photos/{filename}'
 
     # Server path
     path = os.path.join(current_app.config['UPLOAD_DIRECTORY'], "users", str(user), "profile photos")

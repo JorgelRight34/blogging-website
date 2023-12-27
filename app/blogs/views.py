@@ -1,7 +1,7 @@
 from flask import abort, current_app, render_template, request, redirect, url_for, flash, make_response
 from flask_login import current_user, login_required
 from . import blogs
-from ..models import Blog, Comment, Like, File, Notification
+from ..models import Blog, Comment, Like, File, Notification, New
 from .. import db
 from ..main.views import get_users_widget_context, get_posts_widget_context
 import os
@@ -11,6 +11,7 @@ from werkzeug.utils import secure_filename
 from sqlalchemy import or_
 from datetime import datetime
 from dateutil import parser
+from pprint import pprint
 
 @blogs.route('/comment/<int:post_id>', methods=['GET', 'POST'])
 @login_required
@@ -88,6 +89,7 @@ def delete_post(post_id):
 def like_post(post_id):
     # Like post
     try:
+        print("\n\nLiking Post\n\n")
         current_user.like_post(post_id)
     except:
         # If user has already liked post notify
@@ -222,87 +224,16 @@ def news():
     return find_news(url, news_page)
 
 
-@blogs.route('/new_news_post/<topic>', methods=['GET', 'POST'])
-@login_required
-def new_news_post(topic):
-    if request.method == "POST":
-        # Initialize input variables
-        title = request.form.get("title")
-        body = request.form.get("body")
-        files = request.files.getlist("files")
-
-        # Check they are not null
-        if not title:
-            flash("Must enter a title")
-            return render_template('blogs/new_post.html', topic=topic)
-        if not body:
-            flash("Must enter a body")
-            return render_template('blogs/new_post.html', topic=topic)
-        
-        # Initialize Blog object
-        blog = Blog(title=title, body=body, author=current_user.id, topic=topic)
-
-        # Add blog to the database
-        db.session.add(blog)
-        db.session.commit()
-
-        # Get blog object
-        # Save files
-        if files:
-            files_len = len(files) 
-            # Counter
-            i = 1
-            for file in files:
-                # Avoid empty file
-                if i == files_len:
-                    break
-
-                # Embbed filename with uuid and make sure the filename
-                # is safe with secure_filename
-                filename = f'{uuid1()} {secure_filename(file.filename)}'
-
-                # Define static_path which is the relative path to look for the file for flask
-                static_path = f"images/users/{current_user}/post files/{filename}"
-                
-                # Define server path
-                path = os.path.join(current_app.config["UPLOAD_DIRECTORY"], str(current_user), 'post files')
-
-                # If server path doesn't exists then create it
-                if not os.path.exists(path):
-                    os.makedirs(path)
-
-                # Join server's path with the file's name
-                filename = os.path.join(path, filename)
-
-                # Save file
-                file.save(filename)
-
-                # Create file object, and add it to the session 
-                file = File(path=static_path, blog_id=blog.id)
-                print(file)
-                db.session.add(file)
-                i += 1
-
-        # Commit after adding each file
-        db.session.commit()
-
-        # Redirect
-        flash("Post created!")
-        return redirect(url_for('main.index'))
-
-    # If accesed view via GET method
-    return render_template('blogs/new_post.html', topic=topic)
-
-
 @blogs.route('/new_post', methods=['GET', 'POST'])
 @login_required
 def new_post():
+    new = request.args.get('new')
+    responded_post = request.args.get('responded_post')
     if request.method == "POST":
         # Initialize input variables
         title = request.form.get("title")
         body = request.form.get("body")
         files = request.files.getlist("files")
-
         # Check they are not null
         if not title:
             flash("Must enter a title")
@@ -312,12 +243,47 @@ def new_post():
             return render_template('blogs/new_post.html')
         
         # Initialize Blog object
-        blog = Blog(title=title, body=body, author=current_user.id)
+        blog = ''
 
-        # Add blog to the database
-        db.session.add(blog)
-        db.session.commit()
-        print("Post saved")
+        # If post comes in response to a new
+        if new:
+            if request.args.get('image'):
+                new = New(author=request.args.get('author'), title=request.args.get('title'), content=request.args.get('content'), date=parser.parse(request.args.get('date')), url=request.args.get('url'), image=request.args.get('image'))
+                db.session.add(new)
+                db.session.commit()
+                print("Added new case (image)!")
+
+                blog = Blog(title=title, body=body, author=current_user.id, new=new.id, responded_title=new.title)
+                # Add blog to the database
+                db.session.add(blog)
+                db.session.commit()
+            else:
+                new = New(author=request.args.get('author'), title=request.args.get('title'), content=request.args.get('content'), date=parser.parse(request.args.get('date')), url=request.args.get('url'))
+                # Add blog to the database
+                db.session.add(new)
+                db.session.commit()
+                print("Added new case (no-image)!")
+
+                blog = Blog(title=title, body=body, author=current_user.id, new=new.id, responded_title=new.title)
+                # Add blog to the database
+                db.session.add(blog)
+                db.session.commit()
+        elif responded_post:
+            print("Responded_post")
+            # Fecth post which is being responded to
+            responded_post = Blog.query.filter_by(id=responded_post).first()
+            # Create post
+            blog = Blog(title=title, body=body, author=current_user.id, responded_blog=responded_post.id, responded_title=post.title)
+            # Add blog to the database
+            db.session.add(blog)
+            db.session.commit()
+            print("Added new case (responded_post)!")
+        else:
+            blog = Blog(title=title, body=body, author=current_user.id)
+            # Add blog to the database
+            db.session.add(blog)
+            db.session.commit()
+            print("Added new case (no-new)!")
 
         # Get blog object
         # Save files
@@ -335,10 +301,10 @@ def new_post():
                 filename = f'{uuid1()} {secure_filename(file.filename)}'
 
                 # Define static_path which is the relative path to look for the file for flask
-                static_path = f"images/users/{current_user}/post files/{filename}"
+                static_path = f'images/users/{current_user}/post files/{filename}'
                 
                 # Define server path
-                path = os.path.join(current_app.config["UPLOAD_DIRECTORY"], str(current_user), 'post files')
+                path = os.path.join(current_app.config["UPLOAD_DIRECTORY"], f'users/{current_user}/post files')
 
                 # If server path doesn't exists then create it
                 if not os.path.exists(path):
@@ -352,7 +318,6 @@ def new_post():
 
                 # Create file object, and add it to the session 
                 file = File(path=static_path, blog_id=blog.id)
-                print(file)
                 db.session.add(file)
                 i += 1
 
@@ -364,6 +329,12 @@ def new_post():
         return redirect(url_for('main.index'))
 
     # If accesed view via GET method
+    # If post comes with a response to a new
+    if new:
+        return render_template('blogs/new_post.html', new=new)
+    if responded_post:
+        return render_template('blogs/new_post.html', responded_post=responded_post)
+    
     return render_template('blogs/new_post.html')
 
 

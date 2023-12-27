@@ -8,6 +8,58 @@
     {% endfor %}
 {% endmacro %}
 
+{% macro responded_post_card(post, loop_index, date) %}
+    <div class="card">
+        <div class="card-header bg-white">
+            <span class="text-muted">Posted by <a href="{{ url_for('auth.profile', username=post.user ) }}" class="text-decoration-none">{{ render_profile_pic(post.user) }} <b>{{ post.user }}</b></a> |
+            {{ date }}</span>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <h5 class="card-title">{{ post.title }}</h5>
+            </div>
+            <div class="row">
+                <p class="card-body-text">{{ post.body }}</p>
+            </div>
+            <div class="row">
+                {% if post.files | length == 1 %}
+                    {% set file = post.files[0] %}
+                    {% if post.files[0].type == 'image' %}
+                        {{ render_post_image(file.path) }}
+                    {% elif post.files[0].type == 'video' %}
+                        {{ render_post_video(file) }}
+                    {% endif %}
+                {% else %}         
+                    {% set id = 'post' ~ loop_index  ~ 'Images' %}
+                    {{ render_carousel(post, id) }}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro responded_new_card(new, loop_index, date) %}
+    <div class="card">
+        <div class="card-header bg-white">
+            <span class="text-muted">Posted by <a href="{{ new.url }}" class="text-decoration-none"><b>{{ new.author }}</b></a> |
+            {{ date }}</span>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <h5 class="card-title">{{ new.title }}</h5>
+            </div>
+            <div class="row">
+                <p class="card-body-text">{{ new.content }}</p>
+            </div>
+            <div class="row">
+                <div class="d-flex align-items-center justify-content-center" style="max-height: 400px;" >
+                    <img class="img-fluid" src="{{ new.image }}" style="max-height: 400px; object-fit: contain;">
+                </div>
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
 {% macro home_widget() %}
     <div class="card mb-4" style="width: 18rem;">
         <!-- <img src="..." class="card-img-top" alt="..."> -->
@@ -42,36 +94,38 @@
             <h5 class="card-title p-2">Recent posts</h5>
             <ul class="list-group list-group-flush">
                 {% for post in posts[:5] %}
-                    <li class="list-group-item">
-                        <div class="row">
+                    {% if post.files %}
+                        <li class="list-group-item">
                             <div class="row">
-                                <div class="col-md-6">
-                                    {% if post.files %}
-                                    {% set file = post.files[0] %}
-                                    {% if file.type == 'image' %}
-                                        <img src="{{ url_for('static', filename=file.path )}}" style="height: 80px; width: 90px;">
-                                    {% elif file.type == 'video' %}
-                                        <video width="80" height="90">
-                                            <source src="{{ url_for('static', filename=file.path) }}" type="video/{{ file.file_extension }}">
-                                            Your browser does not support the video tag.
-                                        </video>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {% if post.files %}
+                                        {% set file = post.files[0] %}
+                                        {% if file.type == 'image' %}
+                                            <img src="{{ url_for('static', filename=file.path )}}" style="height: 80px; width: 90px;">
+                                        {% elif file.type == 'video' %}
+                                            <video width="80" height="90">
+                                                <source src="{{ url_for('static', filename=file.path) }}" type="video/{{ file.file_extension }}">
+                                                Your browser does not support the video tag.
+                                            </video>
+                                        {% endif %}
                                     {% endif %}
-                                {% endif %}
-                                </div>
-                                <div class="col-md-6">
-                                    <h5 class="" style="font-size: 16px;">{{ post.title }}</h5>
-                                    <p><span class="text-muted" style="font-size: 10px;">{{ post.likes|length }} likes . {{ post.comments|length }} comments</span></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h5 class="" style="font-size: 16px;">{{ post.title }}</h5>
+                                        <p><span class="text-muted" style="font-size: 10px;">{{ post.likes|length }} likes . {{ post.comments|length }} comments</span></p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </li>
+                        </li>
+                    {% endif %}
                 {% endfor %}
             </ul>
         </div>
     </div>
 {% endmacro %}
 
-{% macro users_widget(users, pagination) %}
+{% macro users_widget(users, pagination, current_user) %}
     <div class="card mb-4" style="width: 18rem;">
         <!-- <img src="..." class="card-img-top" alt="..."> -->
         <div class="card-body">
@@ -79,12 +133,15 @@
             <p class="card-text">See other users posts and follow them to support them!</p>
             <ul class="list-group">
                 {% for user in users %}
-                    <li class="list-group-item">
-                        <a href="{{ url_for('auth.profile', username=user) }}" class="text-decoration-none mb-2">
-                            <img src="{{ url_for('static', filename=user.profile_pic) }}" class="profile_pic" style="height: 50px; width: 50px;">
-                            <span class="card-title"><b>{{ user }}</b></span>
-                        </a>
-                    </li>
+                    {% if current_user != user %}
+                        <li class="list-group-item">
+                            <a href="{{ url_for('auth.profile', username=user) }}" class="text-decoration-none mb-2">
+                                <img src="{{ url_for('static', filename=user.profile_pic) }}" class="profile_pic" style="height: 50px; width: 50px;">
+                                <span class="card-title"><b>{{ user }}</b></span>
+                            </a>
+                            <a class="btn btn-outline-success" style="margin-left: 1.5rem;" href="{{ url_for('auth.follow', username=user)}}">Follow</a>
+                        </li>
+                    {% endif %}
                 {% endfor %}
                 {{ users_pagination_widget(pagination, request.endpoint) }}
             </ul>
@@ -218,9 +275,6 @@
         <div class="card-header">
             <span class="text-muted">Posted by <a href="{{ url_for('auth.profile', username=post.user ) }}" class="text-decoration-none">{{ render_profile_pic(post.user) }} <b>{{ post.user }}</b></a> |
             {{ date }}</span>
-            {% if post.topic %}
-                <p class="text-muted">Topic: {{ post.topic }}</p>
-            {% endif %}
         </div>
         <div class="card-body">
             <div class="row">
@@ -237,6 +291,20 @@
                     {% elif post.files[0].type == 'video' %}
                         {{ render_post_video(file) }}
                     {% endif %}
+                {% elif post.new %}
+                    {% set responded_new = post.get_new %}
+                    {% set responded_new_loop_index = loop_index * -1 %}
+                    <hr>
+                    <div class="container" style="padding-right: 100px; padding-left: 100px;">
+                        {{ responded_new_card(responded_new, responded_new_loop_index, responded_new.date) }}
+                    </div>
+                {% elif post.responded_blog %}
+                    {% set responded_post = post.get_responded_post() %}
+                    {% set responded_post_loop_index = loop_index * -1 %}
+                    <hr>
+                    <div class="container" style="padding-right: 100px; padding-left: 100px;">
+                        {{ responded_post_card(responded_post, responded_post_loop_index, responded_post.date) }}
+                    </div>
                 {% else %}         
                     {% set id = 'post' ~ loop_index  ~ 'Images' %}
                     {{ render_carousel(post, id) }}
@@ -251,8 +319,8 @@
                 {% else %}
                     <a class="like" href="{{ url_for('blogs.like_post', post_id=post.id) }}" onclick="update_likes(this, '{{ id }}')"><i class="fa-regular fa-heart" id="icon"></i><span id="text"> Liked</span></a>
                 {% endif %}
-                <a class="text-decoration-none mx-4" style="color: black;" href="{{ url_for('blogs.comment', post_id=post.id) }}"><i class="fa-regular fa-comment"></i> Comment</a>
-                <a class="text-decoration-none" style="color: black;" href="{{ url_for('blogs.post', post_id=post.id) }}"><i class="fa-regular fa-comments"></i> See comments</a>
+                <a class="text-decoration-none mx-4" style="color: black;" href="{{ url_for('blogs.post', post_id=post.id) }}"><i class="fa-regular fa-comment"></i> Comment</a>
+                <a class="text-decoration-none" style="color: black;" href="{{ url_for('blogs.new_post', responded_post=post.id) }}"><i class="fa-regular fa-newspaper"></i> Make a post about this</a>
                 {% if current_user.id == post.author %} 
                     <a class="text-decoration-none mx-4" style="color: black;" href="{{ url_for('blogs.delete_post', post_id=post.id) }}"><i class="fa-regular fa-trash-can"></i> Delete  </a>
                 {% endif %}

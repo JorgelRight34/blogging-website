@@ -11,35 +11,39 @@
 <div class="container flex-container w-75 p-4">
     <div class="container">
         {{ flashed_messages() }}
-        {% for post in posts %}
-            {% if post.title != '[Removed]' %}
+        {% for new in posts %}
+            {% if new.title != '[Removed]' %}
                 <div class="card">
                     <div class="card-header">
-                            Posted by {{ post.author }}
-                            <span class="text-muted">  | {{ moment(post.publishedAt).fromNow() }}</span>
+                            Posted by {{ new.author }}
+                            <span class="text-muted">  | {{ moment(new.publishedAt).fromNow() }}</span>
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            <h5 class="card-title">{{ post.title }}</h5>
+                            <h5 class="card-title">{{ new.title }}</h5>
                         </div>
                         <div class="row">
-                            {% if post.description %}
-                                <p class="card-body-text">{{ post.description }}</p>
+                            {% if new.description %}
+                                <p class="card-body-text">{{ new.description }}</p>
                             {% endif %}
                         </div>
                         <div class="row">
-                            {% if post.urlToImage %}
+                            {% if new.urlToImage %}
                                 <div class="d-flex align-items-center justify-content-center" style="max-height: 400px;" >
-                                    <img class="img-fluid" src="{{ post.urlToImage }}" style="max-height: 400px; object-fit: contain;">
+                                    <img class="img-fluid" src="{{ new.urlToImage }}" style="max-height: 400px; object-fit: contain;">
                                 </div>
                             {% endif %}
                         </div>
                     </div>
                     <div class="card-footer text-muted">
                         <div class="mb-2">
-                            <a class="text-decoration-none mx-4" style="color: black;" href="{{ url_for('blogs.new_news_post', topic=post.title) }}"><i class="fa-regular fa-newspaper"></i> Make a post about this</a>
-                            <a class="text-decoration-none mx-4" style="color: black;" href="{{ url_for('main.search_post', q=post.title) }}"><i class="fa-regular fa-newspaper"></i> See posts about this</a>
-                            <a class="text-decoration-none mx-4" style="color: black;" href="{{ post.url }}" target="_blank"><i class="fa-solid fa-link"></i> Go to source</a>
+                            {% if new.urlToImage %}
+                                <a class="text-decoration-none mx-4" style="color: black;" href="{{ url_for('blogs.new_post', new='True', title=new.title, author=new.author, content=new.description, date=new.publishedAt, url=new.url, image=new.urlToImage) }}"><i class="fa-regular fa-newspaper"></i> Make a post about this</a>
+                            {% else %}
+                                <a class="text-decoration-none mx-4" style="color: black;" href="{{ url_for('blogs.new_post', new='True', title=new.title, author=new.author, content=new.description, date=new.publishedAt, url=new.url) }}"><i class="fa-regular fa-newspaper"></i> Make a post about this</a>
+                            {% endif %}
+                            <a class="text-decoration-none mx-4" style="color: black;" href="{{ url_for('main.search_post', q=new.title) }}"><i class="fa-regular fa-newspaper"></i> See posts about this</a>
+                            <a class="text-decoration-none mx-4" style="color: black;" href="{{ new.url }}" target="_blank"><i class="fa-solid fa-link"></i> Go to source</a>
                         </div>
                     </div>
                 </div>
@@ -89,7 +93,7 @@
             </div>
         </div>
 
-        {{ users_widget(users, users_pagination) }}
+        {{ users_widget(users, users_pagination, current_user) }}
 
         {% if other_posts %}
             {{ posts_widget(other_posts) }}

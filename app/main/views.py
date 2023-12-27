@@ -3,7 +3,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Query
 from . import main
 from .. import db
-from ..models import User, Blog
+from ..models import User, Blog, New
 
 def get_posts_widget_context():
     # Get asked page by the response, the 'type=int' means that if the
@@ -72,7 +72,7 @@ def search_post():
     page = request.args.get('posts_page', 1, type=int)
 
     # Search post's titles like 'q'
-    posts_pagination = Blog.query.filter(or_((Blog.body.ilike(search)), (Blog.title.ilike(search)), (Blog.topic.ilike(search)))).paginate(
+    posts_pagination = Blog.query.filter(or_((Blog.body.ilike(search)), (Blog.responded_title.ilike(search)) )).paginate(
         page=page, per_page=current_app.config['POSTS_PER_PAGE'], error_out=False
     )
 

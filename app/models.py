@@ -16,7 +16,9 @@ class Blog(db.Model):
     comments = db.relationship('Comment', backref='blog', cascade='all, delete-orphan')
     likes = db.relationship('Like', backref='blog', cascade='all, delete-orphan')
     files = db.relationship('File', backref='blog', cascade='all, delete-orphan')
-    topic = db.Column(db.String, nullable=True)
+    new = db.Column(db.Integer, db.ForeignKey('news.id'), nullable=True)
+    responded_title = db.Column(db.String, nullable=True)
+    responded_blog = db.Column(db.Integer, db.ForeignKey('blogs.id'), nullable=True)
     
     def delete_post(self):
         if current_user == self.user:
@@ -28,6 +30,27 @@ class Blog(db.Model):
         else:
            raise ValueError
         
+    @property
+    def get_new(self):
+        new = New.query.filter_by(id=self.new).first()
+        if new:
+            return new
+        else:
+            raise ValueError
+        
+    @property
+    def new_title(self):
+        new = self.get_new
+        if new:
+            return new.title
+        else:
+            return ''
+    
+    def get_responded_post(self):
+        print("We are in")
+        responded_post = Blog.query.filter_by(id=self.responded_blog).first()
+        return responded_post
+
     def __repr__(self):
         return self.title
 
@@ -52,6 +75,18 @@ class Comment(db.Model):
         db.session.delete(self)
         db.session.commit()
 
+
+class New(db.Model):
+    __tablename__ = 'news'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(64), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    author = db.Column(db.String(64), nullable=False)
+    date = db.Column(db.DateTime, index=True)
+    url = db.Column(db.String, nullable=False)
+    image = db.Column(db.String, nullable=True)
+    posts = db.relationship('Blog', backref='blog_new', cascade='all, delete-orphan')
+    
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -99,6 +134,7 @@ class User(UserMixin, db.Model):
         # Make like instance and save it to the database
         like = Like(blog_id=post.id, user_id=current_user.id)
         db.session.add(like)
+        db.session.commit()
 
         # Make notification for post's author
         if post.get_author().id != self.id:
@@ -116,21 +152,19 @@ class User(UserMixin, db.Model):
         # Verify if user has already liked the post
         like = Like.query.filter_by(comment_id=comment.id, user_id=current_user.id).first()
         if like:
-            print(like)
             raise ValueError
         
         # Make like instance and save it to the database
         like = Like(comment_id=comment.id, user_id=current_user.id)
         db.session.add(like)
+        db.session.commit()
 
         # Make notification for post's author
         if comment.get_author().id != self.id:
             action = f'{self.username} has liked your post "{comment.body}"'
             notification = Notification(user_id=comment.get_author().id, notificator_id=self.id, action=action)
             db.session.add(notification)
-
-        # Commit
-        db.session.commit()
+            db.session.commit()
 
     def likes_post(self, post_id):
         # Return True if user likes the post with its id as 'post_id'
