@@ -78,9 +78,9 @@ def delete_post(post_id):
     try:
         post.delete_post()
         flash("Post deleted")
-        return redirect(request.referrer or url_for('main.index'))
+        return redirect(url_for('main.index'))
     except:
-        return redirect(request.referrer or url_for('main.index'))
+        return redirect(url_for('main.index'))
 
 
 @blogs.route('/like_post/<int:post_id>')
@@ -138,72 +138,8 @@ def unlike_comment(comment_id):
     # Redirect to the last page they were in or to the main page
     return '', 204
 
-@blogs.route('/search_news')
-def search_news():
-    # Get query
-    q = request.args.get('q')
 
-    # Api key
-    API_KEY = current_app.config['NEWS_API_KEY']
-
-    # Get asked page
-    news_page = request.args.get('news_page', 1, type=int)
-
-    # Defining url
-    url = f'https://newsapi.org/v2/top-headlines?q={q}&country=us&pageSize={current_app.config["POSTS_PER_PAGE"]}&page={news_page}&apiKey={API_KEY}'
-
-    # Populate posts list
-    response = requests.get(url)
-    posts = []
-
-    # Verify if a response was received
-    if response.status_code == 200:
-        posts = response.json()
-        if posts['totalResults'] == 0:
-            print(posts['totalResults'])
-            flash("Couldn't find what you are looking for")
-            return (redirect(url_for('blogs.news')))
-    else:
-        return '', 404
-    
-    posts = response['articles']
-
-    # Get users widget context
-    users_widget_context = get_users_widget_context()
-    users = users_widget_context['users']
-    users_pagination = users_widget_context['users_pagination']
-
-    # Get posts
-    posts_widget_context = get_posts_widget_context()
-    other_posts = posts_widget_context['posts']
-
-    # Define if there's next
-    next = True
-    if int(response['totalResults']) - (int(current_app.config['POSTS_PER_PAGE']) * int(news_page)) > 0:
-        next = True
-    else:
-        next = False
-
-    # Define if there's previous
-    previous = False
-    if news_page > 1:
-        previous = True
-
-    # Render template
-    return render_template('blogs/news.html', posts=posts, users=users, users_pagination=users_pagination, other_posts=other_posts, news_page=news_page, next=next, previous=previous, q=q)
-
-
-@blogs.route('/news')
-def news():
-    # Api key
-    API_KEY = current_app.config['NEWS_API_KEY']
-
-    # Get asked page
-    news_page = request.args.get('news_page', 1, type=int)
-
-    # Defining url
-    url = f'https://newsapi.org/v2/top-headlines?country=us&pageSize={current_app.config["POSTS_PER_PAGE"]}&page={news_page}&apiKey={API_KEY}'
-
+def find_news(url, news_page, q=''):
     # Populate posts list
     response = requests.get(url)
     posts = []
@@ -247,7 +183,43 @@ def news():
         previous = True
 
     # Render template
-    return render_template('blogs/news.html', posts=posts, users=users, users_pagination=users_pagination, other_posts=other_posts, news_page=news_page, next=next, previous=previous)
+    if q:
+        return render_template('blogs/news.html', posts=posts, users=users, users_pagination=users_pagination, other_posts=other_posts, news_page=news_page, next=next, previous=previous, q=q)
+    else:
+        return render_template('blogs/news.html', posts=posts, users=users, users_pagination=users_pagination, other_posts=other_posts, news_page=news_page, next=next, previous=previous, q=q)
+    
+
+@blogs.route('/search_news')
+def search_news():
+    # Get query
+    q = request.args.get('q')
+
+    # Api key
+    API_KEY = current_app.config['NEWS_API_KEY']
+
+    # Get asked page
+    news_page = request.args.get('news_page', 1, type=int)
+
+    # Defining url
+    url = f'https://newsapi.org/v2/top-headlines?q={q}&country=us&pageSize={current_app.config["POSTS_PER_PAGE"]}&page={news_page}&apiKey={API_KEY}'
+
+    # Render template
+    return find_news(url, news_page, q)
+
+
+@blogs.route('/news')
+def news():
+    # Api key
+    API_KEY = current_app.config['NEWS_API_KEY']
+
+    # Get asked page
+    news_page = request.args.get('news_page', 1, type=int)
+
+    # Define url
+    url = f'https://newsapi.org/v2/top-headlines?country=us&pageSize={current_app.config["POSTS_PER_PAGE"]}&page={news_page}&apiKey={API_KEY}'
+
+    # Find news
+    return find_news(url, news_page)
 
 
 @blogs.route('/new_news_post/<topic>', methods=['GET', 'POST'])

@@ -10,7 +10,7 @@
 {% block content %}
 <div class="container flex-container w-75 p-4">
     <!-- Left column -->
-    <div class="container w-50">
+    <div class="container">
         {{ flashed_messages() }}
         {% for post in posts %}
             {{ render_post_card(post, current_user, loop.index, moment(post.date).fromNow()) }}

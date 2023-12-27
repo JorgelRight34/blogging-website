@@ -9,15 +9,13 @@
 
 {% block content %}
 <div class="container flex-container w-75 p-4">
-    <div class="container w-50">
+    <div class="container">
         {{ flashed_messages() }}
         {% for post in posts %}
             {% if post.title != '[Removed]' %}
                 <div class="card">
                     <div class="card-header">
-                        <a href="{{ post.url }}">
                             Posted by {{ post.author }}
-                        </a>
                             <span class="text-muted">  | {{ moment(post.publishedAt).fromNow() }}</span>
                     </div>
                     <div class="card-body">
@@ -40,7 +38,8 @@
                     <div class="card-footer text-muted">
                         <div class="mb-2">
                             <a class="text-decoration-none mx-4" style="color: black;" href="{{ url_for('blogs.new_news_post', topic=post.title) }}"><i class="fa-regular fa-newspaper"></i> Make a post about this</a>
-                            <a class="text-decoration-none mx-4" style="color: black;" href="{{ url_for('blogs.new_post') }}"><i class="fa-regular fa-newspaper"></i> See posts about this</a>
+                            <a class="text-decoration-none mx-4" style="color: black;" href="{{ url_for('main.search_post', q=post.title) }}"><i class="fa-regular fa-newspaper"></i> See posts about this</a>
+                            <a class="text-decoration-none mx-4" style="color: black;" href="{{ post.url }}" target="_blank"><i class="fa-solid fa-link"></i> Go to source</a>
                         </div>
                     </div>
                 </div>
@@ -53,9 +52,9 @@
             {% endif %}
             {% if next %}
                 {% if q %}
-                    <a href="{{ url_for(request.endpoint, news_page  = news_page + 1, q = q) }}">Next Page</a>
+                    <a href="{{ url_for(request.endpoint, news_page  = news_page + 1, q = q) }}" class="mx-4">Next Page</a>
                 {% else %}
-                    <a href="{{ url_for(request.endpoint, news_page  = news_page + 1) }}">Next Page</a>
+                    <a href="{{ url_for(request.endpoint, news_page  = news_page + 1) }}" class="mx-4">Next Page</a>
                 {% endif %}
             {% endif %}
         </div>

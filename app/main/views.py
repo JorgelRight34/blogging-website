@@ -72,7 +72,7 @@ def search_post():
     page = request.args.get('posts_page', 1, type=int)
 
     # Search post's titles like 'q'
-    posts_pagination = Blog.query.filter(or_((Blog.body.ilike(search)), (Blog.title.ilike(search)))).paginate(
+    posts_pagination = Blog.query.filter(or_((Blog.body.ilike(search)), (Blog.title.ilike(search)), (Blog.topic.ilike(search)))).paginate(
         page=page, per_page=current_app.config['POSTS_PER_PAGE'], error_out=False
     )
 
@@ -81,7 +81,7 @@ def search_post():
 
     # If there are not matches notify user
     if not posts:
-        flash("No matches found")
+        flash("No posts found!")
         return redirect(request.referrer or url_for('main.index'))
     
     # Get posts widget context
