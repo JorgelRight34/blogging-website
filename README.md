@@ -27,25 +27,25 @@
   
   ### Templates:
   Templates contain all the html files that are used to display the GUI of the web app, 
-    ### base.html:
-    Every other template inherits from base.html, this contains the meta data for the html files and also contains the navbar
-    which all other templates inherit, in the base.html we have the following options:
-    If user is logged in:
-      New post +: This options allows the user if logged in to make a new post
-      News: If clicked it shows posts with contents of news from the API 'News API', which returns top headlines news
-    If user is not logged in:
-      Log in: This option takes the user to the log in page
-      Sign Up: This option takes the user to the register page
-    Search form: In this form you can search for posts of users registered in the web app
-    ### home.html:
-    The home.html in which pages of blogs posts are rendered, and in the sides we have widgets for extra information and functionality.
-    ### macros.html:
-    In macros.html there's a list of defined macros which are great to follow the DRY rule (don't repeat yourself), it promotes code reusability 
-    and makes fixes faster by only changing code in one file, a lot of templates include one or more of the macros defined in this file.
-    ### 404.html:
-    Renders a custom "not found (404)" error page.
-    ### 500.html:
-    Renders a custom "internal server error (500)" error page.
+  ### base.html:
+  Every other template inherits from base.html, this contains the meta data for the html files and also contains the navbar
+  which all other templates inherit, in the base.html we have the following options:
+  If user is logged in:
+    New post +: This options allows the user if logged in to make a new post
+    News: If clicked it shows posts with contents of news from the API 'News API', which returns top headlines news
+  If user is not logged in:
+    Log in: This option takes the user to the log in page
+    Sign Up: This option takes the user to the register page
+  Search form: In this form you can search for posts of users registered in the web app
+  ### home.html:
+  The home.html in which pages of blogs posts are rendered, and in the sides we have widgets for extra information and functionality.
+  ### macros.html:
+  In macros.html there's a list of defined macros which are great to follow the DRY rule (don't repeat yourself), it promotes code reusability 
+  and makes fixes faster by only changing code in one file, a lot of templates include one or more of the macros defined in this file.
+  ### 404.html:
+  Renders a custom "not found (404)" error page.
+  ### 500.html:
+  Renders a custom "internal server error (500)" error page.
     
   #### templates/blogs directory:
   This directory holds templates related to posts functions, such as a template for making a new post (new_post.html), template to render info about a post (post.html),
@@ -63,10 +63,10 @@
 
   ### auth directory
   In this directory the backend code for the users and authentication functionality is written, auth directory holds two files, __init__.py and views.py
-    ### auth/__init__.py
-    In this file the blueprint of auth is defined, which holds the routes for all the views defined in auth/views.py.
-    ### auth/views.py
-    In views.py there's a list of view functions and view helping functions related to the users and their authentication processes.
+  ### auth/__init__.py
+  In this file the blueprint of auth is defined, which holds the routes for all the views defined in auth/views.py.
+  ### auth/views.py
+  In views.py there's a list of view functions and view helping functions related to the users and their authentication processes.
   
   ### blogs directory
   In this directory the backend code for the actions related to posts, this directory holds two files __init__.py and views.py
@@ -79,28 +79,28 @@
   ### main directory
   In this directory the main functions for the web app are defined, such as going to the home page, searching users, searching news and searching posts, as well as the errors functionality
   this directory holds three files, __init__.py, views.py and errors.py
-    ### main/__init__.py
-    This file defines the blueprint for the app to use to know the routes definition for the views function defined in main/views.py
-    ### main/views.py
-    main/views.py has the definition for the view functions included in the main blueprint, that do things such rendering the index (home), search news functionality, search posts, and 
-    search users.
-    ### main/errors.py
-    main/errors.py has the view functions for the custom errors templates defined in the templates directory.
+  ### main/__init__.py
+  This file defines the blueprint for the app to use to know the routes definition for the views function defined in main/views.py
+  ### main/views.py
+  main/views.py has the definition for the view functions included in the main blueprint, that do things such rendering the index (home), search news functionality, search posts, and 
+  search users.
+  ### main/errors.py
+  main/errors.py has the view functions for the custom errors templates defined in the templates directory.
 
   ### static directory
   the static directory stores the static files, such as images, css files, and javascript files, static files are files that are not dynamic.
-    ### css directory
-    It contains the css files
-    ### js directory
-    It contains the javascript files
-    ### images
-    It contains the saved images, the images users upload to post posts, or to update/define their profile photo, this files are organized in the following way:
-    ### images/users
-    This directory contains directories with the name of each registered user, in which each directory holds two other more directories, profile photos directory and post files directory
-    ### images/users/<user>/profile photos
-    This directory stores the <user> profile photo
-    ### images/users/<user>/post files
-    This directory stores the images and video files of the published posts made by <user>
+  ### css directory
+  It contains the css files
+  ### js directory
+  It contains the javascript files
+  ### images
+  It contains the saved images, the images users upload to post posts, or to update/define their profile photo, this files are organized in the following way:
+  ### images/users
+  This directory contains directories with the name of each registered user, in which each directory holds two other more directories, profile photos directory and post files directory
+  ### images/users/<user>/profile photos
+  This directory stores the <user> profile photo
+  ### images/users/<user>/post files
+  This directory stores the images and video files of the published posts made by <user>
 
 ### migrations
 This directory stores the versions and more related to the alembic dependency related to the sqlite3 database migrations
