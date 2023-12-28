@@ -31,11 +31,29 @@
             </div>
             <div class="mb-3">
                 <label for="profile_pic" class="form-label">Profile Photo</label>
+                <div class="d-flex justify-content-center align-items-center mb-3"> 
+                    <img src="{{ url_for('static', filename='images/profile photos/default_profile_pic.jpg') }}" height="200px" width="300px" style=" border-radius: 50%;" id="profile_pic">
+                </div>
                 <div id="emailHelp" class="form-text">Optional.</div>
-                <input type="file" class="form-control" id="profile_pic" name="profile_pic">
+                <input type="file" class="form-control" name="profile_pic" id="profile_pic_input" onchange="change_profile_pic(event)">
             </div>
             <button type="submit" class="btn btn-primary">Submit</button>
         </form>
     </div>
 </div>
+<script>
+    function change_profile_pic(event) {
+        // Get profile pic img element
+        profile_pic = document.getElementById('profile_pic')
+        // Get uploaded profile pic
+        profile_pic_input = document.getElementById('profile_pic_input')
+
+        // Check if a file has been uploaded
+        if (profile_pic_input.files.length > 0) {
+            // Change profile pic image
+            profile_pic.src = URL.createObjectURL(profile_pic_input.files[0]);
+        }
+
+    }
+</script>
 {% endblock content %}

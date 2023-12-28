@@ -21,8 +21,8 @@
         {{ render_post_likes(current_user, post) }}
         </div>
         <div class="mb-2">
-            <h3 class="card-title">{{ post.title }}</h3>
-            <p>{{ post.body }} | <span class="text-muted">{{ post.likes|length }} likes, {{ post.comments|length }} comments</span></p>
+            <h3 class="card-title" style="font-size: 20px;">{{ post.title }}</h3>
+            <p  style="font-size: 16px;">{{ post.body }} | <span class="text-muted">{{ post.likes|length }} likes, {{ post.comments|length }} comments</span></p>
         </div>
     </div>
     <hr>
@@ -41,41 +41,42 @@
                 </div>
                 <button type="submit" class="btn btn-primary">Submit</button>
             </form>
-    </div>
+        </div>
         {% for comment in post.comments|sort(attribute='date', reverse=true) %}
-        {% set author = comment.user %}
-        {% set id = 'comment' ~ loop_index ~ 'Likes' %}
-        <div class="row border rounded p-2 mb-2">
-                <!-- Upper row -->
-                <div class="row">
-                    <a href="{{ url_for('auth.profile', username=author) }}" class="text-decoration-none mb-2">
-                        <img src="{{ url_for('static', filename=author.profile_pic) }}" class="profile_pic" style="height: 50px; width: 50px;">
-                        <span class="card-title"><b>{{ author }}</b></span>
-                        <span>
-                            | {{ moment(comment.date).fromNow() }}
+            {% set author = comment.user %}
+            {% set id = 'comment' ~ loop.index ~ 'Likes' %}
+            <div class="row border rounded p-2 mb-2">
+                    <!-- Upper row -->
+                    <div class="row">
+                        <a href="{{ url_for('auth.profile', username=author) }}" class="text-decoration-none mb-2">
+                            <img src="{{ url_for('static', filename=author.profile_pic) }}" class="profile_pic" style="height: 50px; width: 50px;">
+                            <span class="card-title"><b>{{ author }}</b></span>
+                            <span>
+                                | {{ moment(comment.date).fromNow() }}
+                            </span>
+                        </a>
+                        <hr>
+                    </div>
+                    <!-- Comment -->
+                    <div class="row">
+                        <p class="card-body" style="font-size: 14px;">
+                            {{ comment.body }}
+                        </p>
+                        <hr>
+                    </div>
+                    <!-- Buttons -->
+                    <div class="row">
+                        <span class="text-muted">
+                            {% set id = 'post' ~ loop.index ~ 'Likes' %}
+                            <span id="{{ id }}">{{ comment.likes|length }} likes</span> | {{ render_comment_likes(current_user, comment, id) }} |
+                            {% if current_user.id == post.author %} 
+                                <a class="text-decoration-none" style="color: black;" href="{{ url_for('blogs.delete_comment', comment_id=comment.id) }}">
+                                    <i class="fa-regular fa-trash-can"></i> Delete  
+                                </a>
+                            {% endif %}
                         </span>
-                    </a>
-                    <hr>
+                    </div>
                 </div>
-                <!-- Comment -->
-                <div class="row">
-                    <p class="card-body">
-                        {{ comment.body }}
-                    </p>
-                    <hr>
-                </div>
-                <!-- Buttons -->
-                <div class="row">
-                    <span id="{{ id }}" class="text-muted">
-                        {{ comment.likes|length }} likes | {{ comment.comments|length }} comments | {{ render_comment_likes(current_user, comment) }} |
-                        {% if current_user.id == post.author %} 
-                            <a class="text-decoration-none" style="color: black;" href="{{ url_for('blogs.delete_comment', comment_id=comment.id) }}">
-                                <i class="fa-regular fa-trash-can"></i> Delete  
-                            </a>
-                        {% endif %}
-                    </span>
-                </div>
-            </div>
             {% endfor %}
 {% endmacro %}
 

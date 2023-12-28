@@ -1,9 +1,10 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedSerializer as Serializer
-from flask import current_app, url_for
+from flask import current_app, flash, url_for
 from flask_login import UserMixin, current_user, logout_user
 from . import db, login_manager
 from datetime import datetime
+import os
 
 
 class Blog(db.Model):
@@ -22,6 +23,11 @@ class Blog(db.Model):
     
     def delete_post(self):
         if current_user == self.user:
+            # Delete post files
+            for file in self.files:
+                path = os.path.join(current_app.config['UPLOAD_DIRECTORY'], file.path.replace('images/', '').replace('/','\\'))
+                os.remove(path)
+
             # Delete from the session
             db.session.delete(self)
             
@@ -137,9 +143,9 @@ class User(UserMixin, db.Model):
         db.session.commit()
 
         # Make notification for post's author
-        if post.get_author().id != self.id:
+        if post.author != self.id:
             action = f'{self.username} has liked your post "{post.title}"'
-            notification = Notification(user_id=post.get_author().id, notificator_id=self.id, action=action)
+            notification = Notification(user_id=post.author, notificator_id=self.id, action=action)
             db.session.add(notification)
 
         # Commit
@@ -252,19 +258,23 @@ class User(UserMixin, db.Model):
                 if user:
                     follow = Follow(follower_id=current_user.id, followed_id=user.id)
                     action = f'{self.username} is following you'
+                    db.session.add(follow)
+                    db.session.commit()
 
                     # Make notification
                     notification = Notification(user_id=user.id, notificator_id=self.id, action=action)
                     db.session.add(notification)
 
                     # Save to the database
-                    db.session.add(follow)
+                    db.session.add(notification)
                     db.session.commit()
                 else:
                     raise ValueError
             else:
+                flash('Already following')
                 raise ValueError
         else:
+            flash('Cannot follow yourself')
             raise ValueError
 
     @property
@@ -284,17 +294,21 @@ class User(UserMixin, db.Model):
     def is_following(self, username):
         # Find user with username 'username'
         user = User.query.filter_by(username=username).first()
+        print(user.username)
 
         # Check if user already following user
         if user:
-            print("If user")
             follow = Follow.query.filter_by(follower_id=self.id, followed_id=user.id).first()
+            # print(f'{follow.follower_id} follows {follow.followed_id}')
             # Return True if user is following, return False otherwise
             if follow:
+                print("\n\nUser is following\n\n")
                 return True
             else:
+                print("\n\nUser is not following\n\n")
                 return False
         else:
+            print("\n\nNo hay username\n\n")
             return False
         
 
@@ -302,7 +316,7 @@ class User(UserMixin, db.Model):
         # If user is following then unfollow
         user = User.query.filter_by(username=username).first()
 
-        if self.is_following(user.username):
+        if self.is_following(username) == True:
             # Get follow
             follow = Follow.query.filter_by(follower_id=self.id, followed_id=user.id).first()
             
@@ -310,6 +324,7 @@ class User(UserMixin, db.Model):
             db.session.delete(follow)
             db.session.commit()
         else:
+            flash('Already not following')
             raise ValueError
         
         

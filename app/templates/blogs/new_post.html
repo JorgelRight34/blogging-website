@@ -2,6 +2,8 @@
 
 {% block title %}New post{% endblock title %}
 
+{% from 'macros.html' import responded_new_card, responded_post_card %}
+
 {% block side_navbar %}
 {% endblock side_navbar %}
 
@@ -28,7 +30,18 @@
                     <label for="files" class="form-label">Photos/Videos</label>
                     <input class="form-control" type="file" id="files" name="files" onchange="addFileInput(this)" accept="image/*,video/*">
                 </div>
+            {% else %}
+                {% if responded_post %}
+                    <div class="container" style="padding-right: 100px; padding-left: 100px;">
+                        {{ responded_post_card(responded_post, 1, responded_post.date) }}
+                    </div>
+                {% elif new %}
+                    <div class="container" style="padding-right: 100px; padding-left: 100px;">
+                        {{ responded_new_card(new, 1, new.date) }}
+                    </div>
+                {% endif %}
             {% endif %}
+
             <button type="submit" class="btn btn-primary">Submit</button>
         </form>
     </div>

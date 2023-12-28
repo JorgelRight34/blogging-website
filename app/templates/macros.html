@@ -52,9 +52,11 @@
                 <p class="card-body-text">{{ new.content }}</p>
             </div>
             <div class="row">
-                <div class="d-flex align-items-center justify-content-center" style="max-height: 400px;" >
-                    <img class="img-fluid" src="{{ new.image }}" style="max-height: 400px; object-fit: contain;">
-                </div>
+                {% if new.image %}
+                    <div class="d-flex align-items-center justify-content-center" style="max-height: 400px;" >
+                        <img class="img-fluid" src="{{ new.image }}" style="max-height: 400px; object-fit: contain;">
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -135,11 +137,25 @@
                 {% for user in users %}
                     {% if current_user != user %}
                         <li class="list-group-item">
-                            <a href="{{ url_for('auth.profile', username=user) }}" class="text-decoration-none mb-2">
-                                <img src="{{ url_for('static', filename=user.profile_pic) }}" class="profile_pic" style="height: 50px; width: 50px;">
-                                <span class="card-title"><b>{{ user }}</b></span>
-                            </a>
-                            <a class="btn btn-outline-success" style="margin-left: 1.5rem;" href="{{ url_for('auth.follow', username=user)}}">Follow</a>
+                            <div class="row">
+                                <div class="col">
+                                    <a href="{{ url_for('auth.profile', username=user) }}" class="text-decoration-none mb-2">
+                                        <img src="{{ url_for('static', filename=user.profile_pic) }}" class="profile_pic" style="height: 50px; width: 50px;">
+                                        <span class="card-title"><b>{{ user }}</b></span>
+                                    </a>
+                                </div>
+                                <div class="col-auto d-flex align-items-center">
+                                    {% set follow_button_id = 'followButton' ~ loop.index %}
+                                    {% set unfollow_button_id = 'unfollowButton' ~ loop.index %}
+                                    {% if current_user.is_authenticated and current_user.is_following(user.username) %}
+                                        <a class="btn btn-outline-success btn-sm" href="{{ url_for('auth.unfollow', username=user)}}" onclick="update_follow_button(this, '{{ follow_button_id }}')" id="{{ unfollow_button_id}}">Following</a>
+                                        <a class="btn btn-outline-success btn-sm" href="{{ url_for('auth.unfollow', username=user)}}" onclick="update_follow_button(this, '{{ unfollow_button_id }}')" style="display: none;" id="{{ follow_button_id }}">Follow</a>
+                                    {% else %}
+                                        <a class="btn btn-success btn-sm" href="{{ url_for('auth.follow', username=user)}}" onclick="update_follow_button(this, '{{ unfollow_button_id }}')" id="{{ follow_button_id }}">Follow</a>
+                                        <a class="btn btn-outline-success btn-sm" href="{{ url_for('auth.unfollow', username=user)}}" onclick="update_follow_button(this, '{{ follow_button_id }}')" style="display: none;" id="{{ unfollow_button_id}}">Following</a>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </li>
                     {% endif %}
                 {% endfor %}
@@ -150,10 +166,14 @@
 {% endmacro %}
 
 {% macro render_post_likes(current_user, post) %}
+    {% set like_id = 'likePost' ~ post.id %}
+    {% set unlike_id = 'unlikePost' ~ post.id %}
     {% if current_user.is_authenticated and current_user.likes_post(post.id) %}
-        <a class="text-decoration-none" style="color: red;" href="{{ url_for('blogs.unlike_post', post_id=post.id) }}" onclick="update_likes(this, '{{ id }}')"><i class="fa-solid fa-heart" id="icon"></i><span id="text"> Liked</span></a>
+        <a class="text-decoration-none" style="color: red;" href="{{ url_for('blogs.unlike_post', post_id=post.id) }}" onclick="update_likes(this, '{{ like_id }}', '{{ id }}')" id="{{ unlike_id }}"><i class="fa-solid fa-heart" id="icon"></i><span id="text"> Liked</span></a>
+        <a class="like" style="display: none;" href="{{ url_for('blogs.like_post', post_id=post.id) }}" onclick="update_likes(this, '{{ unlike_id}}', '{{ id }}')" id="{{ like_id }}"><i class="fa-regular fa-heart"></i><span id="text"> Like</span></a>
     {% else %}
-        <a class="like" href="{{ url_for('blogs.like_post', post_id=post.id) }}" onclick="update_likes(this, '{{ id }}')"><i class="fa-regular fa-heart" id="icon"></i><span id="text"> Liked</span></a>
+        <a class="like" href="{{ url_for('blogs.like_post', post_id=post.id) }}" onclick="update_likes(this, '{{ unlike_id}}', '{{ id }}')" id="{{ like_id }}"><i class="fa-regular fa-heart"></i><span id="text"> Like</span></a>
+        <a class="text-decoration-none" style="color: red; display: none;" href="{{ url_for('blogs.unlike_post', post_id=post.id) }}" onclick="update_likes(this, '{{ like_id }}', '{{ id }}')" id="{{ unlike_id }}"><i class="fa-solid fa-heart" id="icon"></i><span id="text"> Liked</span></a>
     {% endif %}
 {% endmacro %}
 
@@ -180,11 +200,15 @@
     </div>
 {% endmacro %}
 
-{% macro render_comment_likes(current_user, comment) %}
+{% macro render_comment_likes(current_user, comment, id) %}
+    {% set like_id = 'likeComment' ~ comment.id %}
+    {% set unlike_id = 'unlikeComment' ~ comment.id %}
     {% if current_user.is_authenticated and current_user.likes_comment(comment.id) %}
-        <a class="text-decoration-none" style="color: red;" href="{{ url_for('blogs.unlike_comment', comment_id=comment.id) }}" onclick="update_likes(this, '{{ id }}')"><i class="fa-solid fa-heart" id="icon"></i><span id="text"> Liked</span></a>
+        <a class="text-decoration-none" style="color: red;" href="{{ url_for('blogs.unlike_comment', comment_id=comment.id) }}" onclick="update_likes(this, '{{ like_id }}', '{{ id }}')" id="{{ unlike_id }}"><i class="fa-solid fa-heart" id="icon"></i><span id="text"> Liked</span></a>
+        <a class="like" style="display: none;" href="{{ url_for('blogs.like_comment', comment_id=comment.id) }}" onclick="update_likes(this, '{{ unlike_id}}', '{{ id }}')" id="{{ like_id }}"><i class="fa-regular fa-heart"></i><span id="text"> Like</span></a>
     {% else %}
-        <a class="like" href="{{ url_for('blogs.like_comment', comment_id=comment.id) }}" onclick="update_likes(this, '{{ id }}')"><i class="fa-regular fa-heart" id="icon"></i><span id="text"> Like</span></a>
+        <a class="like" href="{{ url_for('blogs.like_comment', comment_id=comment.id) }}" onclick="update_likes(this, '{{ unlike_id}}', '{{ id }}')" id="{{ like_id }}"><i class="fa-regular fa-heart"></i><span id="text"> Like</span></a>
+        <a class="text-decoration-none" style="color: red; display: none;" href="{{ url_for('blogs.unlike_comment', comment_id=comment.id) }}" onclick="update_likes(this, '{{ like_id }}', '{{ id }}')" id="{{ unlike_id }}"><i class="fa-solid fa-heart" id="icon"></i><span id="text"> Liked</span></a>
     {% endif %}
 {% endmacro %}
 
@@ -314,13 +338,18 @@
         <div class="card-footer text-muted">
             <div>
                 {% set id = 'post' ~ loop_index ~ 'Likes' %}
+                {% set like_id = 'likePost' ~ post.id %}
+                {% set unlike_id = 'unlikePost' ~ post.id %}
                 {% if current_user.is_authenticated and current_user.likes_post(post.id) %}
-                    <a class="text-decoration-none" style="color: red;" href="{{ url_for('blogs.unlike_post', post_id=post.id) }}" onclick="update_likes(this, '{{ id }}')"><i class="fa-solid fa-heart" id="icon"></i><span id="text"> Liked</span></a>
+                    <a class="text-decoration-none" style="color: red;" href="{{ url_for('blogs.unlike_post', post_id=post.id) }}" onclick="update_likes(this, '{{ like_id }}', '{{ id }}')" id="{{ unlike_id }}"><i class="fa-solid fa-heart" id="icon"></i><span id="text"> Liked</span></a>
+                    <a class="like" style="display: none;" href="{{ url_for('blogs.like_post', post_id=post.id) }}" onclick="update_likes(this, '{{ unlike_id}}', '{{ id }}')" id="{{ like_id }}"><i class="fa-regular fa-heart"></i><span id="text"> Like</span></a>
                 {% else %}
-                    <a class="like" href="{{ url_for('blogs.like_post', post_id=post.id) }}" onclick="update_likes(this, '{{ id }}')"><i class="fa-regular fa-heart" id="icon"></i><span id="text"> Liked</span></a>
+                    <a class="like" href="{{ url_for('blogs.like_post', post_id=post.id) }}" onclick="update_likes(this, '{{ unlike_id}}', '{{ id }}')" id="{{ like_id }}"><i class="fa-regular fa-heart"></i><span id="text"> Like</span></a>
+                    <a class="text-decoration-none" style="color: red; display: none;" href="{{ url_for('blogs.unlike_post', post_id=post.id) }}" onclick="update_likes(this, '{{ like_id }}', '{{ id }}')" id="{{ unlike_id }}"><i class="fa-solid fa-heart" id="icon"></i><span id="text"> Liked</span></a>
                 {% endif %}
                 <a class="text-decoration-none mx-4" style="color: black;" href="{{ url_for('blogs.post', post_id=post.id) }}"><i class="fa-regular fa-comment"></i> Comment</a>
                 <a class="text-decoration-none" style="color: black;" href="{{ url_for('blogs.new_post', responded_post=post.id) }}"><i class="fa-regular fa-newspaper"></i> Make a post about this</a>
+                <a class="text-decoration-none mx-4" style="color: black;" href="{{ url_for('main.search_post', q=post.title) }}"><i class="fa-solid fa-magnifying-glass"></i> See posts about this</a>
                 {% if current_user.id == post.author %} 
                     <a class="text-decoration-none mx-4" style="color: black;" href="{{ url_for('blogs.delete_post', post_id=post.id) }}"><i class="fa-regular fa-trash-can"></i> Delete  </a>
                 {% endif %}

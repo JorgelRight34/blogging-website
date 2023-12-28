@@ -89,7 +89,6 @@ def delete_post(post_id):
 def like_post(post_id):
     # Like post
     try:
-        print("\n\nLiking Post\n\n")
         current_user.like_post(post_id)
     except:
         # If user has already liked post notify
@@ -203,7 +202,8 @@ def search_news():
     news_page = request.args.get('news_page', 1, type=int)
 
     # Defining url
-    url = f'https://newsapi.org/v2/top-headlines?q={q}&country=us&pageSize={current_app.config["POSTS_PER_PAGE"]}&page={news_page}&apiKey={API_KEY}'
+    # url = f'https://newsapi.org/v2/everything?q={q}&pageSize={current_app.config["POSTS_PER_PAGE"]}&page={news_page}&apiKey={API_KEY}'
+    url = f'https://newsapi.org/v2/everything?q={q}&pageSize={current_app.config["POSTS_PER_PAGE"]}&page={news_page}&sortBy=popularity&apiKey={API_KEY}'
 
     # Render template
     return find_news(url, news_page, q)
@@ -229,6 +229,15 @@ def news():
 def new_post():
     new = request.args.get('new')
     responded_post = request.args.get('responded_post')
+
+    if new and request.args.get('image'):
+        new = New(author=request.args.get('author'), title=request.args.get('title'), content=request.args.get('content'), date=parser.parse(request.args.get('date')), url=request.args.get('url'), image=request.args.get('image'))
+    elif new:
+         new = New(author=request.args.get('author'), title=request.args.get('title'), content=request.args.get('content'), date=parser.parse(request.args.get('date')), url=request.args.get('url'))
+    elif responded_post:
+         # Fecth post which is being responded to
+        responded_post = Blog.query.filter_by(id=responded_post).first()
+
     if request.method == "POST":
         # Initialize input variables
         title = request.form.get("title")
@@ -247,45 +256,23 @@ def new_post():
 
         # If post comes in response to a new
         if new:
-            if request.args.get('image'):
-                new = New(author=request.args.get('author'), title=request.args.get('title'), content=request.args.get('content'), date=parser.parse(request.args.get('date')), url=request.args.get('url'), image=request.args.get('image'))
-                db.session.add(new)
-                db.session.commit()
-                print("Added new case (image)!")
-
-                blog = Blog(title=title, body=body, author=current_user.id, new=new.id, responded_title=new.title)
-                # Add blog to the database
-                db.session.add(blog)
-                db.session.commit()
-            else:
-                new = New(author=request.args.get('author'), title=request.args.get('title'), content=request.args.get('content'), date=parser.parse(request.args.get('date')), url=request.args.get('url'))
-                # Add blog to the database
-                db.session.add(new)
-                db.session.commit()
-                print("Added new case (no-image)!")
-
-                blog = Blog(title=title, body=body, author=current_user.id, new=new.id, responded_title=new.title)
-                # Add blog to the database
-                db.session.add(blog)
-                db.session.commit()
-        elif responded_post:
-            print("Responded_post")
-            # Fecth post which is being responded to
-            responded_post = Blog.query.filter_by(id=responded_post).first()
-            # Create post
-            blog = Blog(title=title, body=body, author=current_user.id, responded_blog=responded_post.id, responded_title=post.title)
+            blog = Blog(title=title, body=body, author=current_user.id, new=new.id, responded_title=new.title)
             # Add blog to the database
             db.session.add(blog)
             db.session.commit()
-            print("Added new case (responded_post)!")
+
+        elif responded_post:
+            # Create post
+            blog = Blog(title=title, body=body, author=current_user.id, responded_blog=responded_post.id, responded_title=responded_post.title)
+            # Add blog to the database
+            db.session.add(blog)
+            db.session.commit()
         else:
             blog = Blog(title=title, body=body, author=current_user.id)
             # Add blog to the database
             db.session.add(blog)
             db.session.commit()
-            print("Added new case (no-new)!")
 
-        # Get blog object
         # Save files
         if files:
             files_len = len(files) 
@@ -301,10 +288,10 @@ def new_post():
                 filename = f'{uuid1()} {secure_filename(file.filename)}'
 
                 # Define static_path which is the relative path to look for the file for flask
-                static_path = f'images/users/{current_user}/post files/{filename}'
+                static_path = f'images/post files/{filename}'
                 
                 # Define server path
-                path = os.path.join(current_app.config["UPLOAD_DIRECTORY"], f'users/{current_user}/post files')
+                path = os.path.join(current_app.config["UPLOAD_DIRECTORY"], 'post files')
 
                 # If server path doesn't exists then create it
                 if not os.path.exists(path):
@@ -329,12 +316,13 @@ def new_post():
         return redirect(url_for('main.index'))
 
     # If accesed view via GET method
-    # If post comes with a response to a new
+    # If post comes with a response to a news
     if new:
         return render_template('blogs/new_post.html', new=new)
     if responded_post:
         return render_template('blogs/new_post.html', responded_post=responded_post)
     
+    # Else
     return render_template('blogs/new_post.html')
 
 

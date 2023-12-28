@@ -7,6 +7,7 @@ from ..main.views import get_posts_widget_context, get_users_widget_context
 from uuid import uuid1
 from werkzeug.utils import secure_filename
 import os
+import time
 
 
 @auth.route('/delete_profile')
@@ -30,7 +31,6 @@ def login():
 
         # Check if the given password matches the queried user
         if (user is not None):
-            print("user == None")
             if not user.verify_password(password):
                 flash('Invalid username or password')
             else:
@@ -119,7 +119,7 @@ def register():
     # If accesed view via GET method
     return render_template('auth/register.html')
 
-@login_required
+
 @auth.route("/<username>")
 def profile(username):
     # Get username from the database
@@ -150,8 +150,8 @@ def profile(username):
     return render_template('auth/user.html', user=user, posts=posts, pagination=pagination, users=users, users_pagination=users_pagination, other_posts=other_posts)
 
 
-@login_required
 @auth.route('/unfollow/<username>')
+@login_required
 def unfollow(username):
     # Don't allow to ufollow oneself
     if current_user.username == username:
@@ -159,17 +159,16 @@ def unfollow(username):
         return redirect(request.referrer or url_for('main.index'))
     
     # Unfollow user if following
-    try:
-        current_user.unfollow(username)
-    except:
-        flash("Already not following")
+    # Wait 3 seconds to avoid comparing with delayed data
+    time.sleep(3)
+    current_user.unfollow(username)
 
     # Redirect user
-    return redirect(request.referrer or url_for('main.index'))
+    return '', 204
     
 
-@login_required
 @auth.route('/follow/<username>')
+@login_required
 def follow(username):
     # Don't allow to follow oneself
     if current_user.username == username:
@@ -177,13 +176,12 @@ def follow(username):
         return redirect(request.referrer or url_for('main.index'))
     
     # Follow user if not following
-    try:
-        current_user.follow(username)
-    except:
-        flash("Already following")
+    # Wait 3 seconds to avoid comparing with delayed data
+    time.sleep(3)
+    current_user.follow(username)
 
     # Redirect user
-    return redirect(request.referrer or url_for('main.index'))
+    return '', 204
     
 
 @auth.route('/edit_profile/', methods=["GET", "POST"])
@@ -222,6 +220,13 @@ def edit_profile():
 
         # Upload profile pic if given
         if profile_pic:
+            # Remove previous profile pic
+            if current_user.profile_pic:
+                # Delete previous profile pic if it isn't the default
+                if current_user.profile_pic != 'images/profile photos/default_profile_pic.jpg':
+                    os.remove(os.path.join(current_app.config['UPLOAD_DIRECTORY'], current_user.profile_pic.replace('images/', '').replace('/', '\\')))
+
+            # Upload new selected profile pic
             upload_profile_pic(profile_pic, current_user.username)
 
         # Redirect to profile page with a flash message
@@ -240,10 +245,10 @@ def upload_profile_pic(file, user):
     filename = f'{uuid1()} {secure_filename(file.filename)}'
 
     # Get filename
-    static_path = f'images/users/{user}/profile photos/{filename}'
+    static_path = f'images/profile photos/{filename}'
 
     # Server path
-    path = os.path.join(current_app.config['UPLOAD_DIRECTORY'], "users", str(user), "profile photos")
+    path = os.path.join(current_app.config['UPLOAD_DIRECTORY'], 'profile photos')
 
     # Join server's path with the file's name
     filename = os.path.join(path, filename)

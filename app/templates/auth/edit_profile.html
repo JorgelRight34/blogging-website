@@ -35,22 +35,22 @@
             </div>
         </form>
     </div>
-    <script>
-        function change_profile_pic(event) {
-            // Get profile pic img element
-            profile_pic = document.getElementById('profile_pic')
-            // Get uploaded profile pic
-            profile_pic_input = document.getElementById('profile_pic_input')
-
-            // Check if a file has been uploaded
-            if (profile_pic_input.files.length > 0) {
-                // Change profile pic image
-                profile_pic.src = URL.createObjectURL(profile_pic_input.files[0]);
-            }
-    
-        }
-    </script>
 </div>
+<script>
+    function change_profile_pic(event) {
+        // Get profile pic img element
+        profile_pic = document.getElementById('profile_pic')
+        // Get uploaded profile pic
+        profile_pic_input = document.getElementById('profile_pic_input')
+
+        // Check if a file has been uploaded
+        if (profile_pic_input.files.length > 0) {
+            // Change profile pic image
+            profile_pic.src = URL.createObjectURL(profile_pic_input.files[0]);
+        }
+
+    }
+</script>
 {% endblock content %}
 
 {% block extra_column %}
