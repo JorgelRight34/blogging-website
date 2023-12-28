@@ -4,7 +4,10 @@
   YourBlog is a web application that allows users to make posts, comment those posts, see other posts, respond with posts other posts, like posts, follow bloggers, and make posts about news.
   
 ### Programming languages and database:
-  python for the backend, html, CSS and javascript for the frontend, the database is sqlite3, and the framework for the web app is Flask, and the dependencies listed in requeriments.txt
+  python for the backend, html, CSS and javascript for the frontend, the database is sqlite3, and the framework for the web app is Flask, and the dependencies listed in requeriments.txt.
+  knowledge about flask was obtained from the cs50 course and also by the book of [Miguel Grinberg Flask Web Development Developing Web Applications with Python (second edition)](https://www.amazon.com/Flask-Web-Development-Developing-Applications/dp/1491991739).
+  ![Book cover](https://www.amazon.com/Flask-Web-Development-Developing-Applications/dp/1491991739)
+
 
 ### APIS:
 [News API](https://newsapi.org) News API is used to ask for the top headlines current news of the united states.
@@ -16,34 +19,11 @@
     "python flasky.py"
 
 ### Project structure:
-  The project is structured in the following way:
-  |-flasky
-   |-app/
-     |-templates/
-       |-auth/
-       |-blogs/
-       home.html
-     |-static/
-     |-main/
-       |-__init__.py
-       |-errors.py
-       |-views.py
-      |-blogs/
-       |-__init__.py
-       |-views.py
-   |-__init__.py
-   |-models.py
- |-migrations/
- |-tests/
-   |-__init__.py
- |-venv/
- |-requirements.txt
- |-config.py
- |-flasky.py
-
 ### app directory:
   The app directory contains the directories, templates, static, main and blogs, and holds the __init__.py which lists all the routes to view functions given by the subdirectories blueprints   defined in theirs __init__.py files, and also it defines the app factory, the "create_app()" functions which configures the app to be ready to run.
   ### __init__.py
+  it defines the app factory, the "create_app()" functions which configures the app to be ready to run, initializing the dependencies needed to initialize, such as
+  migrate, the database, LoginManager and moment.
   
   ### Templates:
   Templates contain all the html files that are used to display the GUI of the web app, 
@@ -132,6 +112,9 @@ it sets the global variables needed for the web app, such as the News API key, a
 
 ## flasky.py
 This is the file for running the application it creates an app with the app factory create_app() function defined in app/__init__.py and also defines the shell_context for the app.
+
+### Design choices
+The design of the widgets of the home page, and all the other similar pages was a confussion needed to think, at first a side navbar was the idea, but didn't like how it came out, then seeing other web pages similar to this project such as [reddit](reddit.com), [facebook](facebook.com), [instagram](instagram.com), [twitter](twitter.com), inspiration came coming, from [reddit](reddit.com) the inspiration of the users, home page and posts widget was originated, and the design for responding posts was inspired by [twitter](twitter.com).
 
 
 
