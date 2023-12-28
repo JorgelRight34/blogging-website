@@ -67,19 +67,19 @@
     ### 500.html:
     Renders a custom "internal server error (500)" error page.
     
-    #### templates/blogs directory:
-    This directory holds templates related to posts functions, such as a template for making a new post (new_post.html), template to render info about a post (post.html),
-    and a template to render news from the News API (news.html)
-  
-    ### templates/auth directory:
-    The auth directory holds the template related to user and authentication functionality, such as templates for authentication, log in (login.html) and register (register.html),
-    login.html prompts the user for valid credentials and register holds the GUI for the user to use to register in the web app.
-  
-    The user template (user.html) renders information about the user such as his username, a button to follow them, the posts they have posted, and if the user page is about the logged in         user then an option to edit their profile is also rendered.
-  
-    The edit profile template (edit_profile.html) renders options for the user to personalize his profile, options to update their profile pic, username, and email are shown.
-  
-    The users template (users.html) renders cards with info about the users logged in the web app which usernames matches in some way the given query argument.
+  #### templates/blogs directory:
+  This directory holds templates related to posts functions, such as a template for making a new post (new_post.html), template to render info about a post (post.html),
+  and a template to render news from the News API (news.html)
+
+  ### templates/auth directory:
+  The auth directory holds the template related to user and authentication functionality, such as templates for authentication, log in (login.html) and register (register.html),
+  login.html prompts the user for valid credentials and register holds the GUI for the user to use to register in the web app.
+
+  The user template (user.html) renders information about the user such as his username, a button to follow them, the posts they have posted, and if the user page is about the logged in         user then an option to edit their profile is also rendered.
+
+  The edit profile template (edit_profile.html) renders options for the user to personalize his profile, options to update their profile pic, username, and email are shown.
+
+  The users template (users.html) renders cards with info about the users logged in the web app which usernames matches in some way the given query argument.
 
   ### auth directory
   In this directory the backend code for the users and authentication functionality is written, auth directory holds two files, __init__.py and views.py
@@ -88,13 +88,13 @@
     ### auth/views.py
     In views.py there's a list of view functions and view helping functions related to the users and their authentication processes.
   
-    ### blogs directory
-    In this directory the backend code for the actions related to posts, this directory holds two files __init__.py and views.py
-    ### blogs/__init__.py
-    It defines the blueprint for the app to use which defines the routes to the view functions in blogs/views.py
-    ### blogs/views.py
-    It defines the view functions related to posting such as posting, commenting, deleting posts, deleting comments, liking posts, searching news,
-    see news, respond posts annd respond news, are defined.
+  ### blogs directory
+  In this directory the backend code for the actions related to posts, this directory holds two files __init__.py and views.py
+  ### blogs/__init__.py
+  It defines the blueprint for the app to use which defines the routes to the view functions in blogs/views.py
+  ### blogs/views.py
+  It defines the view functions related to posting such as posting, commenting, deleting posts, deleting comments, liking posts, searching news,
+  see news, respond posts annd respond news, are defined.
 
   ### main directory
   In this directory the main functions for the web app are defined, such as going to the home page, searching users, searching news and searching posts, as well as the errors functionality
