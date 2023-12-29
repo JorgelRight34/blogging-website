@@ -2,10 +2,9 @@
 function update_likes(btn, other_btn_id, text) {
     // Get likes's text element
     let likes_text = document.getElementById(text);
-    console.log(likes_text)
     let likes = 'likes'
 
-    // Change button
+    // Change buttons display visibility
     btn.style.display = 'none';
     let other_btn = document.getElementById(other_btn_id);
     console.log(other_btn);

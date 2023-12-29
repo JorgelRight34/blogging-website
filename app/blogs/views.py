@@ -115,12 +115,13 @@ def like_comment(comment_id):
 @blogs.route('/unlike_post/<int:post_id>')
 @login_required
 def unlike_post(post_id):
+    print("\n\nUnliking post\n\n")
     # Like post
-    try:
-        current_user.unlike_post(post_id)
-    except:
+    #try:
+    current_user.unlike_post(post_id)
+    #except:
         # If user has already liked post notify
-        pass
+        #pass
     
     # Redirect to the last page they were in or to the main page
     return '', 204
