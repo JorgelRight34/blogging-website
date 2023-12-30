@@ -1,22 +1,20 @@
 # YourBlog
-#### Video Demo:  <URL HERE>
+#### Video Demo: [Video](https://youtu.be/AgIazSLPAj0): https://youtu.be/AgIazSLPAj0
 #### Description: 
-  YourBlog is a web application that allows users to make posts, comment those posts, see other posts, respond with posts other posts, like posts, follow bloggers, and make posts about news.
+  YourBlog is a web application that allows users to make posts, comment those posts, see other posts, respond with posts other posts, like posts, follow bloggers, and make posts about news,   see posts about others posts, go to news's urls, delete oneself's posts, edit own's profile, have notifications and more!
   
 ### Programming languages and database:
   python for the backend, html, CSS and javascript for the frontend, the database is sqlite3, and the framework for the web app is Flask, and the dependencies listed in requeriments.txt.
   knowledge about flask was obtained from the cs50 course and also by the book of [Miguel Grinberg Flask Web Development Developing Web Applications with Python (second edition)](https://www.amazon.com/Flask-Web-Development-Developing-Applications/dp/1491991739).
-  ![Book cover](https://www.amazon.com/Flask-Web-Development-Developing-Applications/dp/1491991739)
-
 
 ### APIS:
 [News API](https://newsapi.org) News API is used to ask for the top headlines current news of the united states.
 
 ### Installation:
   To install the web application and have it up and running, firt we need to install the requeriments defined in requeriments.txt, it can be done typing in the terminal:
-    "pip install -r requeriments.txt"
+    ```pip install -r requeriments.txt```
   It must be typed inside the directory of the web application, once the requeriments are installed we can start the server with the following command:
-    "python flasky.py"
+    ```python app.py```
 
 ### Project structure:
 ### app directory:
@@ -115,23 +113,3 @@ This is the file for running the application it creates an app with the app fact
 
 ### Design choices
 The design of the widgets of the home page, and all the other similar pages was a confussion needed to think, at first a side navbar was the idea, but didn't like how it came out, then seeing other web pages similar to this project such as [reddit](reddit.com), [facebook](facebook.com), [instagram](instagram.com), [twitter](twitter.com), inspiration came coming, from [reddit](reddit.com) the inspiration of the users, home page and posts widget was originated, and the design for responding posts was inspired by [twitter](twitter.com).
-
-
-
-    
-  
-  
-
-  
-
-  
-  
-  
-
-  
-  
-  
-
-  
-
-
