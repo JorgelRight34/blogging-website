@@ -1,5 +1,5 @@
 # YourBlog
-#### Video Demo: [Video](https://youtu.be/AgIazSLPAj0): https://youtu.be/AgIazSLPAj0
+#### Video Demo: https://youtu.be/AgIazSLPAj0
 #### Description: 
   YourBlog is a web application that allows users to make posts, comment those posts, see other posts, respond with posts other posts, like posts, follow bloggers, and make posts about news,   see posts about others posts, go to news's urls, delete oneself's posts, edit own's profile, have notifications and more!
   
