@@ -144,6 +144,15 @@ class User(UserMixin, db.Model):
         # Delete current user
         db.session.delete(current_user)
 
+        # Delete all user's post files
+        for post in self.posts:
+            for file in post.files:
+                    path = os.path.join(current_app.config['UPLOAD_DIRECTORY'], file.path.replace('images/', '').replace('/','\\'))
+                    os.remove(path)
+
+        # Delete user's profile file
+        os.remove(os.path.join(current_app.config['UPLOAD_DIRECTORY'], self.profile_pic.replace('images/', '').replace('/','\\')))
+
         # Log out before deleting
         logout_user()
 
