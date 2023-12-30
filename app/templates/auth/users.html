@@ -9,7 +9,6 @@
 
 {% block content %}
 <div class="container flex-container w-75 p-4">
-
     <!-- Left column -->
     <div class="container" >
         {% for user in users %}
@@ -28,36 +27,34 @@
     </div> 
 
     <!-- Right column -->
-    <div>
-        {{ home_widget() }}
-
-        <div class="card mb-4" style="width: 18rem;">
-            <!-- <img src="..." class="card-img-top" alt="..."> -->
-            <div class="card-body">
-                <h5 class="card-title">Users</h5>
-                <p class="card-text">See other users posts and follow them to support them!</p>
-                <ul class="list-group">
-                    {% for user in other_users %}
-                        <li class="list-group-item">
-                            <a href="{{ url_for('auth.profile', username=user) }}" class="text-decoration-none mb-2">
-                                <img src="{{ url_for('static', filename=user.profile_pic) }}" class="profile_pic" style="height: 50px; width: 50px;">
-                                <span class="card-title"><b>{{ user }}</b></span>
-                            </a>
-                        </li>
-                    {% endfor %}
-                </ul>
-                <div class="d-flex justify-content-center align-items-center">
-                    {% if other_users_pagination.has_next %}
-                        <a href="{{ url_for(request.endpoint, q=q, users_page  = pagination.page + 1) }}">Next Page</a>
-                    {% elif other_users_pagination.has_prev %}
-                        <a href="{{ url_for(request.endpoint, q=q, users_page = pagination.page - 1) }}">Previous Page</a>
-                    {% endif %}
+    <div style="width: 18rem;">
+        <div style="position: fixed; top: 56;">
+            <div class="card mb-4" style="width: 18rem;">
+                {{ home_widget() }}
+                <div class="card-body">
+                    <h5 class="card-title">Users</h5>
+                    <p class="card-text">See other users posts and follow them to support them!</p>
+                    <ul class="list-group">
+                        {% for user in other_users %}
+                            <li class="list-group-item">
+                                <a href="{{ url_for('auth.profile', username=user) }}" class="text-decoration-none mb-2">
+                                    <img src="{{ url_for('static', filename=user.profile_pic) }}" class="profile_pic" style="height: 50px; width: 50px;">
+                                    <span class="card-title"><b>{{ user }}</b></span>
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    <div class="d-flex justify-content-center align-items-center">
+                        {% if other_users_pagination.has_next %}
+                            <a href="{{ url_for(request.endpoint, q=q, users_page  = pagination.page + 1) }}">Next Page</a>
+                        {% elif other_users_pagination.has_prev %}
+                            <a href="{{ url_for(request.endpoint, q=q, users_page = pagination.page - 1) }}">Previous Page</a>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
+            {{ posts_widget(posts) }}
         </div>
-
-        {{ posts_widget(posts) }}
     </div>
 </div>
-
 {% endblock content %}

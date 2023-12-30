@@ -15,39 +15,52 @@
                 {{ render_post_card(post, current_user, loop.index, moment(post.date).fromNow()) }}
                 <br />
             {% endfor %}
-            {{ posts_pagination_widget(pagination, request.endpoint) }}
+
+            <div class="d-flex justify-content-center align-items-center">
+                {% if pagination.has_next %}
+                    <a href="{{ url_for('auth.profile', username=user, posts_page  = pagination.page + 1) }}" class="mx-4 text-decoration-none">Next Page <i class="fa-solid fa-arrow-right"></i></a>
+                {% elif pagination.has_prev %}
+                    <a href="{{ url_for('auth.profile', username=user, posts_page = pagination.page - 1) }}" class="mx-4 text-decoration-none"><i class="fa-solid fa-arrow-left"></i> Previous Page</i></a>
+                {% endif %}
+            </div>
         </div> 
 
-        <div>
-            <div class="card mb-4">
-                {{ user_card(user, current_user) }}
-            </div>
-            <div class="card mb-4" style="width: 18rem;">
-                <div class="card-body">
-                    <h5 class="card-title">Users</h5>
-                    <p class="card-text">See other users posts and follow them to support them!</p>
-                    <ul class="list-group">
-                        {% for user in users %}
-                            {% if current_user != user %}
-                                <li class="list-group-item">
-                                    <a href="{{ url_for('auth.profile', username=user) }}" class="text-decoration-none mb-2">
-                                        <img src="{{ url_for('static', filename=user.profile_pic) }}" class="profile_pic" style="height: 50px; width: 50px;">
-                                        <span class="card-title"><b>{{ user }}</b></span>
-                                    </a>
-                                    <a class="btn btn-outline-success" style="margin-left: 1.5rem;" href="{{ url_for('auth.follow', username=user)}}">Follow</a>
-                                </li>
-                            {% endif %}
-                        {% endfor %}
-                    </ul>
-                    <div class="d-flex justify-content-center align-items-center">
-                        {% if users_pagination.has_next %}
-                            <a href="{{ url_for(request.endpoint, username=user, users_page  = pagination.page + 1) }}">Next Page</a>
-                        {% elif users_pagination.has_prev %}
-                            <a href="{{ url_for(request.endpoint, username=user, users_page = pagination.page - 1) }}">Previous Page</a>
-                        {% endif %}
+        <div style="width: 18rem;">
+            <div style="position: fixed; top: 56;">
+                <!-- User card -->
+                <div class="card mb-4">
+                    {{ user_card(user, current_user) }}
+                </div>  
+                <!-- Users widget-->
+                <div class="card mb-4" style="width: 18rem;">
+                    <div class="card-body">
+                        <h5 class="card-title">Users</h5>
+                        <p class="card-text">See other users posts and follow them to support them!</p>
+                        <ul class="list-group">
+                            {% for user in users %}
+                                {% if current_user != user %}
+                                    <li class="list-group-item">
+                                        <a href="{{ url_for('auth.profile', username=user) }}" class="text-decoration-none mb-2">
+                                            <img src="{{ url_for('static', filename=user.profile_pic) }}" class="profile_pic" style="height: 50px; width: 50px;">
+                                            <span class="card-title"><b>{{ user }}</b></span>
+                                        </a>
+                                        <a class="btn btn-outline-success" style="margin-left: 1.5rem;" href="{{ url_for('auth.follow', username=user)}}">Follow</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
                     </div>
                 </div>
-            </div>
+
+                <!-- Pagination Widget -->
+                <div class="d-flex justify-content-center align-items-center">
+                    {% if users_pagination.has_next %}
+                        <a href="{{ url_for(request.endpoint, username=user, users_page  = pagination.page + 1) }}">Next Page</a>
+                    {% elif users_pagination.has_prev %}
+                        <a href="{{ url_for(request.endpoint, username=user, users_page = pagination.page - 1) }}">Previous Page</a>
+                    {% endif %}
+                </div>
+            </div>       
         </div>
         
     </div>

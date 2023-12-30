@@ -2,10 +2,10 @@
 
 {% block title %}Log In{% endblock title %}
 
-{% block side_navbar %}
-{% endblock side_navbar %}
+{% from 'macros.html' import flashed_messages %}
 
 {% block content %}
+{{ flashed_messages() }}
 <div class="container p-4">
     <div class="container border rounded shadow-sm p-4 bg-white" style="max-width: 50%;">
         <div class="mb-4">

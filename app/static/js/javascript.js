@@ -13,20 +13,24 @@ function update_likes(btn, other_btn_id, text) {
     if (parseInt(likes_text.textContent) + 1 == 1) {
         likes = ' like'
         likes_text.textContent = parseInt(likes_text.textContent) + 1 + likes;
+        return;
     }
     if (parseInt(likes_text.textContent) - 1 == 1) {
         likes = ' like'
         likes_text.textContent = parseInt(likes_text.textContent) + 1 + likes;
+        return;
     }
     else 
     {
         if (other_btn.style.color == 'red') {
             // Add 1 to likes count
-            likes_text.textContent = parseInt(likes_text.textContent) - 1 + ' likes';
+            likes_text.textContent = parseInt(likes_text.textContent) + 1 + ' likes';
+            return;
         }
         else {
              // Substract 1 to likes count
              likes_text.textContent = parseInt(likes_text.textContent) - 1 + ' likes';
+             return;
         }
     }
 }

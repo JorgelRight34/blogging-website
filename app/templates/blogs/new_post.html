@@ -31,18 +31,20 @@
                     <input class="form-control" type="file" id="files" name="files" onchange="addFileInput(this)" accept="image/*,video/*">
                 </div>
             {% else %}
-                {% if responded_post %}
-                    <div class="container" style="padding-right: 100px; padding-left: 100px;">
-                        {{ responded_post_card(responded_post, 1, responded_post.date) }}
-                    </div>
+                    {% if responded_post %}
+                        <div class="container" style="padding-right: 100px; padding-left: 100px;">
+                            {{ responded_post_card(responded_post, 1, responded_post.date) }}
+                        </div>
                 {% elif new %}
-                    <div class="container" style="padding-right: 100px; padding-left: 100px;">
-                        {{ responded_new_card(new, 1, new.date) }}
-                    </div>
+                        <div class="container" style="padding-right: 100px; padding-left: 100px;">
+                            {{ responded_new_card(new, 1, new.date) }}
+                        </div>
                 {% endif %}
             {% endif %}
 
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <div class="mt-3 d-flex justify-content-center" >
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
         </form>
     </div>
 </div>

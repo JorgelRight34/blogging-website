@@ -1,7 +1,5 @@
 {% extends 'base.html' %}
 
-{% block title %}News{% endblock title %}
-
 {% from 'macros.html' import users_pagination_widget, users_widget, posts_widget, flashed_messages %}
 
 {% block side_navbar %}
@@ -15,7 +13,7 @@
             {% if new.title != '[Removed]' %}
                 <div class="card">
                     <div class="card-header">
-                            Posted by {{ new.author }}
+                            Posted by <a class="text-decoration-none" href="{{ new.url }}" target="_blank" >{{ new.author }}</a>
                             <span class="text-muted">  | {{ moment(new.publishedAt).fromNow() }}</span>
                     </div>
                     <div class="card-body">
@@ -30,7 +28,7 @@
                         <div class="row">
                             {% if new.urlToImage %}
                                 <div class="d-flex align-items-center justify-content-center" style="max-height: 400px;" >
-                                    <img class="img-fluid" src="{{ new.urlToImage }}" style="max-height: 400px; object-fit: contain;">
+                                    <img alt="{{ new.title }}" class="img-fluid" src="{{ new.urlToImage }}" style="max-height: 400px; object-fit: contain;">
                                 </div>
                             {% endif %}
                         </div>
@@ -52,53 +50,54 @@
         {% endfor %}
         <div class="d-flex justify-content-center align-items-center">
             {% if previous %}
-                <a href="{{ url_for(request.endpoint, news_page = news_page - 1) }}">Previous Page</a>
+                <a href="{{ url_for(request.endpoint, news_page = news_page - 1) }}" class="mx-4 text-decoration-none"><i class="fa-solid fa-arrow-left"></i> Previous Page</i></a>
             {% endif %}
             {% if next %}
                 {% if q %}
-                    <a href="{{ url_for(request.endpoint, news_page  = news_page + 1, q = q) }}" class="mx-4">Next Page</a>
+                    <a href="{{ url_for(request.endpoint, news_page  = news_page + 1, q = q) }}" class="mx-4 text-decoration-none">Next Page <i class="fa-solid fa-arrow-right"></i></a>
                 {% else %}
-                    <a href="{{ url_for(request.endpoint, news_page  = news_page + 1) }}" class="mx-4">Next Page</a>
+                    <a href="{{ url_for(request.endpoint, news_page  = news_page + 1) }}" class="mx-4 text-decoration-none">Next Page <i class="fa-solid fa-arrow-right"></i></a>
                 {% endif %}
             {% endif %}
         </div>
     </div> 
-    <div>   
-        <div class="card mb-4" style="width: 18rem;">
-            <!-- <img src="..." class="card-img-top" alt="..."> -->
-            <div class="card-body">
-                <h5 class="card-title">News</h5>
-                <p class="card-text">News blogs here!</p>
-                <a href="{{ url_for('blogs.new_post') }}" class="btn btn-primary mb-2">Create New Post</a>
-                <div class="dropdown mb-2">
-                    <button class="btn btn-primary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    Search User
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li>
-                            <div class="container bg-white rounded p-4">
-                                <form action="{{ url_for('main.search_user') }}">
-                                    <label for="username" class="form-label">Username</label>
-                                    <input id="username" class="form-control mb-2" name="q">
-                                    <button class="btn btn-primary" type="submit">Submit</button>
-                                </form>
-                            </div>
-                        </li>
-                    </ul>
+    <div style="width: 18rem;">   
+        <div style="position: fixed; top: 56;">
+            <!-- News Widget -->
+            <div class="card mb-4" style="width: 18rem;">
+                <div class="card-body">
+                    <h5 class="card-title">News</h5>
+                    <p class="card-text">News blogs here!</p>
+                    <a href="{{ url_for('blogs.new_post') }}" class="btn btn-primary mb-2">Create New Post</a>
+                    <div class="dropdown mb-2">
+                        <button class="btn btn-primary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-magnifying-glass"></i> Search User
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <div class="container bg-white rounded p-4">
+                                    <form action="{{ url_for('main.search_user') }}">
+                                        <label for="username" class="form-label">Username</label>
+                                        <input id="username" class="form-control mb-2" name="q">
+                                        <button class="btn btn-primary" type="submit">Submit</button>
+                                    </form>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <form class="d-flex" action="{{ url_for('blogs.search_news') }}">
+                        <input class="form-control me-2" name="q" type="search" placeholder="Search News" aria-label="Search">
+                        <button class="btn btn-outline-success" type="submit">Search</button>
+                    </form>
                 </div>
-                <form class="d-flex" action="{{ url_for('blogs.search_news') }}">
-                    <input class="form-control me-2" name="q" type="search" placeholder="Search News" aria-label="Search">
-                    <button class="btn btn-outline-success" type="submit">Search</button>
-                </form>
             </div>
+            {{ users_widget(users, users_pagination, current_user) }}
+
+            {% if other_posts %}
+                {{ posts_widget(other_posts) }}
+            {% endif %}
         </div>
-
-        {{ users_widget(users, users_pagination, current_user) }}
-
-        {% if other_posts %}
-            {{ posts_widget(other_posts) }}
-        {% endif %}
-
+       
     </div>
 </div>
 {% endblock content %}

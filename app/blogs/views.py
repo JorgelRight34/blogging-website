@@ -1,17 +1,18 @@
-from flask import abort, current_app, render_template, request, redirect, url_for, flash, make_response
-from flask_login import current_user, login_required
-from . import blogs
-from ..models import Blog, Comment, Like, File, Notification, New
-from .. import db
-from ..main.views import get_users_widget_context, get_posts_widget_context
 import os
-import requests
+from datetime import datetime
+from flask import (abort, current_app, flash, make_response, redirect,
+                   render_template, request, url_for)
+from flask_login import current_user, login_required
+from sqlalchemy import or_
 from uuid import uuid1
 from werkzeug.utils import secure_filename
-from sqlalchemy import or_
-from datetime import datetime
 from dateutil import parser
 from pprint import pprint
+from . import blogs
+from .. import db
+from ..main.views import get_posts_widget_context, get_users_widget_context
+from ..models import Comment, File, Like, New, Notification, Post
+import requests
 
 @blogs.route('/comment/<int:post_id>', methods=['GET', 'POST'])
 @login_required
@@ -72,7 +73,7 @@ def delete_notification(notification_id):
 @login_required
 def delete_post(post_id):
     # Get post
-    post = Blog.query.filter_by(id=int(post_id)).first()
+    post = Post.query.filter_by(id=int(post_id)).first()
 
     # Delete post if possible
     post.delete_post()
@@ -82,63 +83,6 @@ def delete_post(post_id):
         return redirect(url_for('main.index'))
     except:
         return redirect(url_for('main.index'))
-
-
-@blogs.route('/like_post/<int:post_id>')
-@login_required
-def like_post(post_id):
-    # Like post
-    try:
-        current_user.like_post(post_id)
-    except:
-        # If user has already liked post notify
-        pass
-    
-    # Redirect to the last page they were in or to the main page
-    return '', 204
-
-
-@blogs.route('/like_comment/<int:comment_id>')
-@login_required
-def like_comment(comment_id):
-    # Like post
-    try:
-        current_user.like_comment(comment_id)
-    except:
-        # If user has already liked post notify
-        pass
-    
-    # Redirect to the last page they were in or to the main page
-    return '', 204
-
-
-@blogs.route('/unlike_post/<int:post_id>')
-@login_required
-def unlike_post(post_id):
-    print("\n\nUnliking post\n\n")
-    # Like post
-    #try:
-    current_user.unlike_post(post_id)
-    #except:
-        # If user has already liked post notify
-        #pass
-    
-    # Redirect to the last page they were in or to the main page
-    return '', 204
-
-
-@blogs.route('/unlike_comment/<int:comment_id>')
-@login_required
-def unlike_comment(comment_id):
-    # Like post
-    try:
-        current_user.unlike_comment(comment_id)
-    except:
-        # If user has already liked post notify
-        pass
-    
-    # Redirect to the last page they were in or to the main page
-    return '', 204
 
 
 def find_news(url, news_page, q=''):
@@ -189,40 +133,34 @@ def find_news(url, news_page, q=''):
         return render_template('blogs/news.html', posts=posts, users=users, users_pagination=users_pagination, other_posts=other_posts, news_page=news_page, next=next, previous=previous, q=q)
     else:
         return render_template('blogs/news.html', posts=posts, users=users, users_pagination=users_pagination, other_posts=other_posts, news_page=news_page, next=next, previous=previous, q=q)
+
+
+@blogs.route('/like_comment/<int:comment_id>')
+@login_required
+def like_comment(comment_id):
+    # Like post
+    try:
+        current_user.like_comment(comment_id)
+    except:
+        # If user has already liked post notify
+        pass
     
-
-@blogs.route('/search_news')
-def search_news():
-    # Get query
-    q = request.args.get('q')
-
-    # Api key
-    API_KEY = current_app.config['NEWS_API_KEY']
-
-    # Get asked page
-    news_page = request.args.get('news_page', 1, type=int)
-
-    # Defining url
-    # url = f'https://newsapi.org/v2/everything?q={q}&pageSize={current_app.config["POSTS_PER_PAGE"]}&page={news_page}&apiKey={API_KEY}'
-    url = f'https://newsapi.org/v2/everything?q={q}&pageSize={current_app.config["POSTS_PER_PAGE"]}&page={news_page}&sortBy=popularity&apiKey={API_KEY}'
-
-    # Render template
-    return find_news(url, news_page, q)
+    # Redirect to the last page they were in or to the main page
+    return '', 204
 
 
-@blogs.route('/news')
-def news():
-    # Api key
-    API_KEY = current_app.config['NEWS_API_KEY']
-
-    # Get asked page
-    news_page = request.args.get('news_page', 1, type=int)
-
-    # Define url
-    url = f'https://newsapi.org/v2/top-headlines?country=us&pageSize={current_app.config["POSTS_PER_PAGE"]}&page={news_page}&apiKey={API_KEY}'
-
-    # Find news
-    return find_news(url, news_page)
+@blogs.route('/like_post/<int:post_id>')
+@login_required
+def like_post(post_id):
+    # Like post
+    try:
+        current_user.like_post(post_id)
+    except:
+        # If user has already liked post notify
+        pass
+    
+    # Redirect to the last page they were in or to the main page
+    return '', 204
 
 
 @blogs.route('/new_post', methods=['GET', 'POST'])
@@ -234,10 +172,10 @@ def new_post():
     if new and request.args.get('image'):
         new = New(author=request.args.get('author'), title=request.args.get('title'), content=request.args.get('content'), date=parser.parse(request.args.get('date')), url=request.args.get('url'), image=request.args.get('image'))
     elif new:
-         new = New(author=request.args.get('author'), title=request.args.get('title'), content=request.args.get('content'), date=parser.parse(request.args.get('date')), url=request.args.get('url'))
+        new = New(author=request.args.get('author'), title=request.args.get('title'), content=request.args.get('content'), date=parser.parse(request.args.get('date')), url=request.args.get('url'))
     elif responded_post:
-         # Fecth post which is being responded to
-        responded_post = Blog.query.filter_by(id=responded_post).first()
+        # Fecth post which is being responded to
+        responded_post = Post.query.filter_by(id=responded_post).first()
 
     if request.method == "POST":
         # Initialize input variables
@@ -253,25 +191,29 @@ def new_post():
             return render_template('blogs/new_post.html')
         
         # Initialize Blog object
-        blog = ''
+        post = ''
 
         # If post comes in response to a new
         if new:
-            blog = Blog(title=title, body=body, author=current_user.id, new=new.id, responded_title=new.title)
+            # Add new
+            db.session.add(new)
+            db.session.commit()
+            # Create post
+            post = Post(title=title, body=body, author=current_user.id, new=new.id, responded_title=new.title)
             # Add blog to the database
-            db.session.add(blog)
+            db.session.add(post)
             db.session.commit()
 
         elif responded_post:
             # Create post
-            blog = Blog(title=title, body=body, author=current_user.id, responded_blog=responded_post.id, responded_title=responded_post.title)
+            post = Post(title=title, body=body, author=current_user.id, responded_post=responded_post.id, responded_title=responded_post.title)
             # Add blog to the database
-            db.session.add(blog)
+            db.session.add(post)
             db.session.commit()
         else:
-            blog = Blog(title=title, body=body, author=current_user.id)
+            post = Post(title=title, body=body, author=current_user.id)
             # Add blog to the database
-            db.session.add(blog)
+            db.session.add(post)
             db.session.commit()
 
         # Save files
@@ -305,7 +247,7 @@ def new_post():
                 file.save(filename)
 
                 # Create file object, and add it to the session 
-                file = File(path=static_path, blog_id=blog.id)
+                file = File(path=static_path, post_id=post.id, alt=file.filename)
                 db.session.add(file)
                 i += 1
 
@@ -327,11 +269,26 @@ def new_post():
     return render_template('blogs/new_post.html')
 
 
+@blogs.route('/news')
+def news():
+    # Api key
+    API_KEY = current_app.config['NEWS_API_KEY']
+
+    # Get asked page
+    news_page = request.args.get('news_page', 1, type=int)
+
+    # Define url
+    url = f'https://newsapi.org/v2/top-headlines?country=us&pageSize={current_app.config["POSTS_PER_PAGE"]}&page={news_page}&apiKey={API_KEY}'
+
+    # Find news
+    return find_news(url, news_page)
+
+
 @blogs.route('/post/<int:post_id>')
 @login_required
 def post(post_id):
     # Get post
-    post = Blog.query.filter_by(id=post_id).first()
+    post = Post.query.filter_by(id=post_id).first()
 
     # Render template
     return render_template("blogs/post.html", post=post)
@@ -351,9 +308,45 @@ def reply_comment(comment_id):
     
     # If accesed view by GET method
     return render_template('blogs/comment.html')
+
+
+@blogs.route('/search_news')
+def search_news():
+    # Get query
+    q = request.args.get('q')
+
+    # Api key
+    API_KEY = current_app.config['NEWS_API_KEY']
+
+    # Get asked page
+    news_page = request.args.get('news_page', 1, type=int)
+
+    # Defining url
+    url = f'https://newsapi.org/v2/everything?q={q}&pageSize={current_app.config["POSTS_PER_PAGE"]}&page={news_page}&sortBy=popularity&apiKey={API_KEY}'
+
+    # Render template
+    return find_news(url, news_page, q)
+
+
+@blogs.route('/unlike_comment/<int:comment_id>')
+@login_required
+def unlike_comment(comment_id):
+    # Like post
+    try:
+        current_user.unlike_comment(comment_id)
+    except:
+        # If user has already liked post notify
+        pass
     
+    # Redirect to the last page they were in or to the main page
+    return '', 204
 
-   
 
-
-
+@blogs.route('/unlike_post/<int:post_id>')
+@login_required
+def unlike_post(post_id):
+    # Like post
+    current_user.unlike_post(post_id)
+    
+    # Redirect to the last page they were in or to the main page
+    return '', 204

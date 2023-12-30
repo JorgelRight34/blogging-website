@@ -106,7 +106,7 @@
                         {% if post.files|length == 1 %}
                             {% set file = post.files[0] %}
                             {% if file.type == 'image' %}
-                                {{ render_post_image(file.path) }}
+                                {{ render_post_image(file) }}
                             {% elif file.type == 'video' %}
                                 {{ render_post_video(file) }}
                             {% endif %}

@@ -1,9 +1,9 @@
-from flask import current_app, render_template, session, redirect, url_for, request, flash
+from flask import current_app, flash, redirect, render_template, request, session, url_for
 from sqlalchemy import or_
 from sqlalchemy.orm import Query
 from . import main
 from .. import db
-from ..models import User, Blog, New
+from ..models import New, Post, User
 
 def get_posts_widget_context():
     # Get asked page by the response, the 'type=int' means that if the
@@ -13,7 +13,7 @@ def get_posts_widget_context():
     # Get page of posts from the blogs table ordered descended by date 
     # return the asked page (set of elements), which has a set of elements of 
     # 3, error_out returns 404 when the asked elements per page exceeds the avaible
-    posts_pagination = Blog.query.order_by(Blog.date.desc()).paginate(
+    posts_pagination = Post.query.order_by(Post.date.desc()).paginate(
         page=page, 
         per_page=current_app.config['POSTS_PER_PAGE'], 
         error_out=False
@@ -72,7 +72,7 @@ def search_post():
     page = request.args.get('posts_page', 1, type=int)
 
     # Search post's titles like 'q'
-    posts_pagination = Blog.query.filter(or_((Blog.body.ilike(search)), (Blog.responded_title.ilike(search)) )).paginate(
+    posts_pagination = Post.query.filter(or_((Post.body.ilike(search)), (Post.responded_title.ilike(search)) )).paginate(
         page=page, per_page=current_app.config['POSTS_PER_PAGE'], error_out=False
     )
 
@@ -85,7 +85,7 @@ def search_post():
         return redirect(request.referrer or url_for('main.index'))
     
     # Get posts widget context
-    other_posts = Blog.query.limit(5).all()
+    other_posts = Post.query.limit(5).all()
 
     # Get users widget context
     users_widget_context = get_users_widget_context()

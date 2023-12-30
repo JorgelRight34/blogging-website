@@ -12,7 +12,7 @@
     <div class="card">
         <div class="card-header bg-white">
             <span class="text-muted">Posted by <a href="{{ url_for('auth.profile', username=post.user ) }}" class="text-decoration-none">{{ render_profile_pic(post.user) }} <b>{{ post.user }}</b></a> |
-            {{ date }}</span>
+            {{ date.strftime('%y/%m/%d') }}</span>
         </div>
         <div class="card-body">
             <div class="row">
@@ -25,7 +25,7 @@
                 {% if post.files | length == 1 %}
                     {% set file = post.files[0] %}
                     {% if post.files[0].type == 'image' %}
-                        {{ render_post_image(file.path) }}
+                        {{ render_post_image(file) }}
                     {% elif post.files[0].type == 'video' %}
                         {{ render_post_video(file) }}
                     {% endif %}
@@ -42,7 +42,7 @@
     <div class="card">
         <div class="card-header bg-white">
             <span class="text-muted">Posted by <a href="{{ new.url }}" class="text-decoration-none"><b>{{ new.author }}</b></a> |
-            {{ date }}</span>
+            {{ date.strftime('%y/%m/%d') }}</span>
         </div>
         <div class="card-body">
             <div class="row">
@@ -54,7 +54,7 @@
             <div class="row">
                 {% if new.image %}
                     <div class="d-flex align-items-center justify-content-center" style="max-height: 400px;" >
-                        <img class="img-fluid" src="{{ new.image }}" style="max-height: 400px; object-fit: contain;">
+                        <img class="img-fluid rounded" src="{{ new.image }}" style="max-height: 400px; object-fit: contain;" alt="{{ new.title }}">
                     </div>
                 {% endif %}
             </div>
@@ -68,10 +68,10 @@
         <div class="card-body">
             <h5 class="card-title">Home Page</h5>
             <p class="card-text">Your personal home page. Come here to check in with new posts.</p>
-            <a href="{{ url_for('blogs.new_post') }}" class="btn btn-primary mb-2">Create New Post</a>
+            <a href="{{ url_for('blogs.new_post') }}" class="btn btn-primary mb-2">+ Create New Post</a>
             <div class="dropdown">
                 <button class="btn btn-primary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Search User
+                    <i class="fa-solid fa-magnifying-glass"></i>  Search User
                 </button>
                 <ul class="dropdown-menu">
                     <li>
@@ -90,41 +90,43 @@
 {% endmacro %}
 
 {% macro posts_widget(posts) %}
-    <div class="card mb-4" style="width: 18rem;">
-        <!-- <img src="..." class="card-img-top" alt="..."> -->
-        <div class="p-2">
-            <h5 class="card-title p-2">Recent posts</h5>
-            <ul class="list-group list-group-flush">
-                {% for post in posts[:5] %}
-                    {% if post.files %}
-                        <li class="list-group-item">
-                            <div class="row">
+    {% if posts %}
+        <div class="card mb-4" style="width: 18rem;">
+            <!-- <img src="..." class="card-img-top" alt="..."> -->
+            <div class="p-2">
+                <h5 class="card-title p-2">Recent posts</h5>
+                <ul class="list-group list-group-flush">
+                    {% for post in posts[:5] %}
+                        {% if post.files %}
+                            <li class="list-group-item">
                                 <div class="row">
-                                    <div class="col-md-6">
-                                        {% if post.files %}
-                                        {% set file = post.files[0] %}
-                                        {% if file.type == 'image' %}
-                                            <img src="{{ url_for('static', filename=file.path )}}" style="height: 80px; width: 90px;">
-                                        {% elif file.type == 'video' %}
-                                            <video width="80" height="90">
-                                                <source src="{{ url_for('static', filename=file.path) }}" type="video/{{ file.file_extension }}">
-                                                Your browser does not support the video tag.
-                                            </video>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            {% if post.files %}
+                                            {% set file = post.files[0] %}
+                                            {% if file.type == 'image' %}
+                                                <img src="{{ url_for('static', filename=file.path )}}" class="img-fluid rounded" style="height: 80px; width: 90px;" alt="{{ file.alt }}">
+                                            {% elif file.type == 'video' %}
+                                                <video width="80" height="90">
+                                                    <source src="{{ url_for('static', filename=file.path) }}" type="video/{{ file.file_extension }}">
+                                                    Your browser does not support the video tag.
+                                                </video>
+                                            {% endif %}
                                         {% endif %}
-                                    {% endif %}
-                                    </div>
-                                    <div class="col-md-6">
-                                        <h5 class="" style="font-size: 16px;">{{ post.title }}</h5>
-                                        <p><span class="text-muted" style="font-size: 10px;">{{ post.likes|length }} likes . {{ post.comments|length }} comments</span></p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h5 class="" style="font-size: 16px;">{{ post.title }}</h5>
+                                            <p><span class="text-muted" style="font-size: 10px;">{{ post.likes|length }} likes . {{ post.comments|length }} comments</span></p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </li>
-                    {% endif %}
-                {% endfor %}
-            </ul>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
-    </div>
+    {% endif %}
 {% endmacro %}
 
 {% macro users_widget(users, pagination, current_user) %}
@@ -140,7 +142,7 @@
                             <div class="row">
                                 <div class="col">
                                     <a href="{{ url_for('auth.profile', username=user) }}" class="text-decoration-none mb-2">
-                                        <img src="{{ url_for('static', filename=user.profile_pic) }}" class="profile_pic" style="height: 50px; width: 50px;">
+                                        <img src="{{ url_for('static', filename=user.profile_pic) }}" class="profile_pic" style="height: 50px; width: 50px;" alt="{{ user }}'s profile pic" >
                                         <span class="card-title"><b>{{ user }}</b></span>
                                     </a>
                                 </div>
@@ -182,7 +184,7 @@
         <div class="mb-2">
             <a href="{{ url_for('auth.profile', username=user) }}" class="text-decoration-none mb-2">
                 <a href="{{ url_for('auth.edit_profile') }}" class="text-decoration-none mb-2">
-                    <img src="{{ url_for('static', filename=user.profile_pic) }}" class="profile_pic" style="height: 50px; width: 50px;">
+                    <img src="{{ url_for('static', filename=user.profile_pic) }}" class="profile_pic" style="height: 50px; width: 50px;" alt="{{ user }}'s profile pic">
                 </a>
                 <span class="card-title"><b>{{ user }}</b></span>
             </a>
@@ -195,7 +197,15 @@
         {% if current_user.id == user.id %}
             <a class="btn btn-primary" href="{{ url_for('auth.edit_profile') }}">Edit profile</a>
         {% else %}
-            <a href="{{ url_for('auth.follow', username=user) }}" class="btn btn-primary">Follow</a>
+            {% set follow_button_id = 'followButton' ~ user.username %}
+            {% set unfollow_button_id = 'unfollowButton' ~ user.username %}
+            {% if current_user.is_authenticated and current_user.is_following(user.username) %}
+                <a class="btn btn-outline-success" href="{{ url_for('auth.unfollow', username=user, reload='True')}}" onclick="update_follow_button(this, '{{ follow_button_id }}')" id="{{ unfollow_button_id}}">Following</a>
+                <a class="btn btn-outline-success" href="{{ url_for('auth.unfollow', username=user, reload='True')}}" onclick="update_follow_button(this, '{{ unfollow_button_id }}')" style="display: none;" id="{{ follow_button_id }}">Follow</a>
+            {% else %}
+                <a class="btn btn-success" href="{{ url_for('auth.follow', username=user, reload='True')}}" onclick="update_follow_button(this, '{{ unfollow_button_id }}')" id="{{ follow_button_id }}">Follow</a>
+                <a class="btn btn-outline-success" href="{{ url_for('auth.unfollow', username=user, reload='True')}}" onclick="update_follow_button(this, '{{ follow_button_id }}')" style="display: none;" id="{{ unfollow_button_id}}">Following</a>
+            {% endif %}
         {% endif %}
     </div>
 {% endmacro %}
@@ -215,9 +225,9 @@
 {% macro posts_pagination_widget(pagination, endpoint) %}
     <div class="d-flex justify-content-center align-items-center">
         {% if pagination.has_next %}
-            <a href="{{ url_for(endpoint, posts_page  = pagination.page + 1) }}">Next Page</a>
+            <a href="{{ url_for(endpoint, posts_page  = pagination.page + 1) }}" class="mx-4 text-decoration-none">Next Page <i class="fa-solid fa-arrow-right"></i></a>
         {% elif pagination.has_prev %}
-            <a href="{{ url_for(endpoint, posts_page = pagination.page - 1) }}">Previous Page</a>
+            <a href="{{ url_for(endpoint, posts_page = pagination.page - 1) }}" class="mx-4 text-decoration-none"><i class="fa-solid fa-arrow-left"></i> Previous Page</i></a>
         {% endif %}
     </div>
 {% endmacro %}
@@ -232,15 +242,15 @@
     </div>
 {% endmacro %}
 
-{% macro render_post_image(filename) %}
+{% macro render_post_image(file) %}
     <div class="d-flex align-items-center justify-content-center" style="max-height: 400px;" >
-        <img class="img-fluid" src="{{ url_for('static', filename=filename) }}" style="max-height: 400px; object-fit: contain;">
+        <img alt="{{ file.alt }}" class="img-fluid rounded" src="{{ url_for('static', filename=file.path) }}" style="max-height: 400px; object-fit: contain;">
     </div>
 {% endmacro %}
 
 {% macro render_post_video(file) %}
     <div class="d-flex align-items-center justify-content-center" style="max-height: 400px;" >
-        <video style="max-height: 400px; object-fit: contain;" controls>
+        <video alt="{{ file.alt }}" style="max-height: 400px; object-fit: contain;" class="rounded" controls>
             <source src="{{ url_for('static', filename=file.path) }}" type="video/{{ file.file_extension }}">
             Your browser does not support the video tag.
         </video>
@@ -248,11 +258,11 @@
 {% endmacro %}
 
 {% macro render_profile_pic(author, size) %}
-    <img src="{{ url_for('static', filename=author.profile_pic) }}" class="profile_pic">
+    <img alt="{{ author }} profile pic" src="{{ url_for('static', filename=author.profile_pic) }}" class="profile_pic">
 {% endmacro %}
 
 {% macro render_carousel(post, id) %} 
-    <div id="{{ id }}" class="carousel slide">
+    <div id="{{ id }}" class="carousel slide carousel-dark slide"">
         <div class="carousel-indicators">
             {% for file in post.files %}
                 {% if loop.index == 1 %}
@@ -267,7 +277,7 @@
                 {% if loop.index == 1 %}
                     <div class="carousel-item active">
                         {% if file.type == 'image' %}
-                            {{ render_post_image(file.path) }}
+                            {{ render_post_image(file) }}
                         {% elif file.type == 'video' %}
                             {{ render_post_video(file) }}
                         {% endif %}
@@ -275,7 +285,7 @@
                 {% else %}
                     <div class="carousel-item">
                         {% if file.type == 'image' %}
-                            {{ render_post_image(file.path) }}
+                            {{ render_post_image(file) }}
                         {% elif file.type == 'video' %}
                             {{ render_post_video(file) }}
                         {% endif %}
@@ -311,7 +321,7 @@
                 {% if post.files | length == 1 %}
                     {% set file = post.files[0] %}
                     {% if post.files[0].type == 'image' %}
-                        {{ render_post_image(file.path) }}
+                        {{ render_post_image(file) }}
                     {% elif post.files[0].type == 'video' %}
                         {{ render_post_video(file) }}
                     {% endif %}
@@ -322,7 +332,7 @@
                     <div class="container" style="padding-right: 100px; padding-left: 100px;">
                         {{ responded_new_card(responded_new, responded_new_loop_index, responded_new.date) }}
                     </div>
-                {% elif post.responded_blog %}
+                {% elif post.responded_post %}
                     {% set responded_post = post.get_responded_post() %}
                     {% set responded_post_loop_index = loop_index * -1 %}
                     <hr>

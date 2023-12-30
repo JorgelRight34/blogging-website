@@ -2,10 +2,10 @@
 
 {% block title %}Sign Up{% endblock title %}
 
-{% block side_navbar %}
-{% endblock side_navbar %}
+{% from 'macros.html' import flashed_messages %}
 
 {% block content %}
+{{ flashed_messages() }}
 <div class="p-4 container">
     <div class="container border rounded shadow-sm p-4 bg-white" style="max-width: 50%;">
         <div class="mb-4">
@@ -37,7 +37,7 @@
                 <div id="emailHelp" class="form-text">Optional.</div>
                 <input type="file" class="form-control" name="profile_pic" id="profile_pic_input" onchange="change_profile_pic(event)">
             </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="submit" class="btn btn-primary">Register</button>
         </form>
     </div>
 </div>

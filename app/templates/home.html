@@ -1,7 +1,5 @@
 {% extends 'base.html' %}
 
-{% block title %}Blog App{% endblock %}
-
 {% from 'macros.html' import render_post_card, posts_pagination_widget, users_pagination_widget, home_widget, users_widget, posts_widget, flashed_messages %}
 
 {% block side_navbar %}
@@ -20,19 +18,17 @@
     </div> 
 
     <!-- Right column -->
-    <div>
+    <div style="width: 18rem;">
 
-        {{ home_widget() }}
-
-
-        {{ users_widget(users, users_pagination, current_user) }}
-
-
-        {% if other_posts %}
-            {{ posts_widget(other_posts) }}
-        {% else %}
-            {{ posts_widget(posts) }}
-        {% endif %}
+        <div style="position: fixed; top: 56;">
+            {{ home_widget() }}
+            {{ users_widget(users, users_pagination, current_user) }}
+            {% if other_posts %}
+                {{ posts_widget(other_posts) }}
+            {% else %}
+                {{ posts_widget(posts) }}
+            {% endif %}
+        </div>
 
     </div>
 </div>
