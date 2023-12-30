@@ -14,7 +14,7 @@
   To install the web application and have it up and running, firt we need to install the requeriments defined in requeriments.txt, it can be done typing in the terminal:
     ```pip install -r requeriments.txt```
   It must be typed inside the directory of the web application, once the requeriments are installed we can start the server with the following command:
-    ```python app.py```
+    ```python flasky.py```
 
 ### Project structure:
 ### app directory:
