@@ -226,6 +226,39 @@ StackState::~StackState()
     }
 }
 
+void StackState::copy_from_stack(void* vdest, const void* vsrc, size_t n) const
+{
+    char* dest = static_cast<char*>(vdest);
+    const char* src = static_cast<const char*>(vsrc);
+    if (src + n <= this->_stack_start
+        || src >= this->_stack_start + this->_stack_saved
+        || this->_stack_saved == 0) {
+        // Nothing we're copying was spilled from the stack
+        memcpy(dest, src, n);
+        return;
+    }
+
+    if (src < this->_stack_start) {
+        // Copy the part before the saved stack.
+        // We know src + n > _stack_start due to the test above.
+        const size_t nbefore = this->_stack_start - src;
+        memcpy(dest, src, nbefore);
+        dest += nbefore;
+        src += nbefore;
+        n -= nbefore;
+    }
+    // We know src >= _stack_start after the before-copy, and
+    // src < _stack_start + _stack_saved due to the first if condition
+    size_t nspilled = std::min<size_t>(n, this->_stack_start + this->_stack_saved - src);
+    memcpy(dest, this->stack_copy + (src - this->_stack_start), nspilled);
+    dest += nspilled;
+    src += nspilled;
+    n -= nspilled;
+    if (n > 0) {
+        // Copy the part after the saved stack
+        memcpy(dest, src, n);
+    }
+}
 
 }; // namespace greenlet
 
