@@ -1,5 +1,71 @@
 # YourBlog
 #### Video Demo: https://youtu.be/AgIazSLPAj0
+
+#### Features
+
+---
+
+##### Create Posts
+
+![new post](https://jorgelorenzom.vercel.app/projects/yourblog/new-post.jpg) Create posts specifying the title, description, and the ability to upload multiple media files such as photos, videos, and audio.
+
+##### Comment on Posts
+
+![comment](https://jorgelorenzom.vercel.app/projects/yourblog/comment.jpg)
+
+- Liking comments is allowed.
+
+##### Respond to Posts with Other Posts (Repost)
+
+![repost](https://jorgelorenzom.vercel.app/projects/yourblog/repost.jpg) Respond to posts with other posts by clicking "make a post about this."
+
+##### View and Create Posts Related to News
+
+![news](https://jorgelorenzom.vercel.app/projects/yourblog/news.png) You can view posts from various newsletters worldwide, and these can be reposted with your opinion or comment.
+
+- News can be filtered with the search bar.
+
+#### Profiles
+
+![profiles](https://jorgelorenzom.vercel.app/projects/yourblog/profile.jpg) Each user has their own profile specifying their followers, number of posts, posts, username, profile photo, and how many they follow. Logged-in users can enter their profile and edit it.
+
+##### Other Features
+
+- Like posts.
+- Follow other bloggers.
+- Search for other bloggers.
+- Access news URLs.
+- Delete your own posts.
+- Edit your profile.
+- Receive notifications, among other features.
+
+---
+
+#### Programming Languages and Database
+
+- ###### Backend: Python.
+- ###### Frontend: HTML, CSS, and JavaScript.
+- ###### Database: SQLite3.
+- ###### Framework: Flask.
+
+Flask knowledge comes from the CS50 course and the book [Flask Web Development: Developing Web Applications with Python (2nd Edition) by Miguel Grinberg](https://www.amazon.com/Flask-Web-Development-Developing-Applications/dp/1491991739).
+
+---
+
+#### API Used:
+
+- ###### [News API](https://newsapi.org): Used to obtain current news headlines in the United States.
+
+---
+
+#### Design Decisions:
+
+The design was inspired by platforms such as **Reddit**, **Facebook**, **Instagram**, and **Twitter**.
+
+- ###### Reddit: Widgets for posts and main page design.
+- ###### Twitter: Design for responding to posts.
+
+
 #### Description: 
   YourBlog is a web application that allows users to make posts, comment those posts, see other posts, respond with posts other posts, like posts, follow bloggers, and make posts about news,   see posts about others posts, go to news's urls, delete oneself's posts, edit own's profile, have notifications and more!
   
